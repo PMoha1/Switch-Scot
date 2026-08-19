@@ -25,7 +25,9 @@ BANNER = r"""
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Multi-Interface Network Resilience Engine v3.5 [AR/EN]
+ Universal Multi-Interface Network Resilience Engine v3.5
+ 🇾🇪 Developed by: Mohammed Yaqeen (Yemen - Sana'a)
+ 🇾🇪 المطور: محمد يقين مجمل الفايق (اليمن - صنعاء)
 """
 
 # القواميس اللغوية للدعم الكامل للغة العربية والإنجليزية

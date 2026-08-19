@@ -112,6 +112,18 @@ switch-scot-monitor
 
 ---
 
+## 👨‍💻 About the Developer / نبذة عن المطور
+
+### 🇾🇪 **محمد يقين مجمل الفايق (Mohammed Yaqeen Mujamal Al-Faiq)**
+- 📍 **الموقع (Location):** الجمهورية اليمنية - صنعاء (Yemen - Sana'a)
+- 📺 **صانع محتوى تقني (Tech Creator):** صاحب قناة يوتيوب مخصصة لتقديم شروحات متقدمة وتجارب عملية في أنظمة وتوزيعات لينكس المختلفة (Arch, Kali, Debian, Ubuntu).
+- 💡 **الاهتمامات والخبرات (Interests & Focus):**
+  - اختبار وتطوير أدوات الشبكات والأمن السيبراني وتقييم المرونة.
+  - التجارب العميقة على توزيعات لينكس وإدارة الأنظمة المتقدمة.
+  - أبحاث وتطبيقات الذكاء الاصطناعي والموديلات المحلية غير المقيدة (Local & Uncensored AI Models).
+
+---
+
 ## ⚠️ Disclaimer / إخلاء مسؤولية
 
 This tool is strictly developed for educational purposes, authorized security assessments, and network resilience testing. Usage against unauthorized targets without explicit prior consent is strictly prohibited. The author assumes no liability for misuse.  
