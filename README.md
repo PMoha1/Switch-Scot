@@ -49,8 +49,8 @@ sudo switch-scot
  Universal Multi-Interface Network Resilience Engine v3.5 [AR/EN]
 
 =================================================================
- [1] 🇸🇦 العربية (Arabic)
- [2] 🇬🇧 English
+ [1] 🇾🇪 العربية (Arabic)
+ [2] 🏴‍☠️ English
 =================================================================
 [؟/Query] Select Language / اختر اللغة [1-2, default 1]: 1
 

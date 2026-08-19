@@ -409,8 +409,8 @@ def run_interactive_menu():
     
     # 0. Language Selection
     print("=" * 65)
-    print(" [1] 🇸🇦 العربية (Arabic)")
-    print(" [2] 🇬🇧 English")
+    print(" [1] 🇾🇪 العربية (Arabic)")
+    print(" [2] 🏴‍☠️ English")
     print("=" * 65)
     lang_sel = input("[؟/Query] Select Language / اختر اللغة [1-2, default 1]: ").strip()
     lang = "en" if lang_sel == "2" else "ar"
