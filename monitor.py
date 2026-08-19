@@ -10,18 +10,6 @@ import time
 import os
 import sys
 
-def ar(text):
-    if not text:
-        return text
-    try:
-        import arabic_reshaper
-        from bidi.algorithm import get_display
-        reshaper = arabic_reshaper.ArabicReshaper(configuration={'delete_harakat': False, 'support_ligatures': True})
-        reshaped = reshaper.reshape(str(text))
-        return get_display(reshaped)
-    except Exception:
-        return text
-
 def get_stats():
     res = {}
     ifaces = [f for f in os.listdir('/sys/class/net') if f != 'lo']
@@ -36,12 +24,12 @@ def get_stats():
             pass
     return res
 
-title = "⚡ " + ar("شاشة المراقبة اللحظية لتدفق الحزم والسرعة") + " (Switch-Scot Monitor)"
-header_iface = ar("الكرت") + " (Interface)"
-header_pps = ar("حزمة/ثانية") + " (PPS)"
-header_mbps = ar("السرعة") + " (Mbps)"
-total_label = ar("المجموع الإجمالي")
-exit_hint = ar("اضغط Ctrl+C للإغلاق والخروج.") + " (Press Ctrl+C to exit)"
+title = "⚡ شاشة المراقبة اللحظية لتدفق الحزم والسرعة (Switch-Scot Monitor)"
+header_iface = "الكرت (Interface)"
+header_pps = "حزمة/ثانية (PPS)"
+header_mbps = "السرعة (Mbps)"
+total_label = "المجموع الإجمالي"
+exit_hint = "اضغط Ctrl+C للإغلاق والخروج. (Press Ctrl+C to exit)"
 
 print("\033[2J\033[H", end="")
 print("=" * 65)
@@ -80,4 +68,4 @@ try:
         print(f" {exit_hint}")
         sys.stdout.flush()
 except KeyboardInterrupt:
-    print("\n[+] " + ar("تم إيقاف شاشة المراقبة."))
+    print("\n[+] تم إيقاف شاشة المراقبة.")
