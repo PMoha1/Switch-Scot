@@ -25,16 +25,17 @@ BANNER = r"""
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Multi-Interface Network Resilience Engine v3.1
+ Universal Multi-Interface Network Resilience Engine v3.2
 """
 
 class SwitchScot:
-    def __init__(self, target="10.0.0.1", port=80, interfaces=None, mode="tcp-syn", skip_mac=False):
+    def __init__(self, target="10.0.0.1", port=80, interfaces=None, mode="tcp-syn", skip_mac=False, custom_hostname=None):
         parsed_target, parsed_port = self.parse_target(target, port)
         self.target = parsed_target
         self.port = parsed_port
         self.mode = mode
         self.skip_mac = skip_mac
+        self.custom_hostname = custom_hostname
         self.is_termux = self.check_termux()
         
         # Format interfaces as list
@@ -61,7 +62,6 @@ class SwitchScot:
         raw_input = str(raw_input).strip()
         target_port = default_port or 80
 
-        # Check if URL scheme is present or if it has a port
         if not raw_input.startswith(('http://', 'https://')):
             match = re.match(r'^([^/:]+):(\d+)(/.*)?$', raw_input)
             if match:
@@ -82,7 +82,6 @@ class SwitchScot:
             elif parsed.scheme == 'http':
                 target_port = 80
             
-            # Try resolving hostname to IP if it's a domain
             try:
                 ip = socket.gethostbyname(host)
                 return ip, target_port
@@ -207,13 +206,17 @@ class SwitchScot:
         new_ttl = random.randint(64, 128)
         subprocess.run(["sysctl", "-w", f"net.ipv4.ip_default_ttl={new_ttl}"], capture_output=True)
 
-        # 2. Randomize Device Hostname
-        host_pool = [
-            "iPhone-14-Pro", "iPad-Air", "Galaxy-S23", "Pixel-8-Pro", 
-            "MacBook-Pro-M2", "Dell-XPS-15", "ThinkPad-X1", "Smart-TV-LG",
-            "Workstation-X", "Ubuntu-Server", "Surface-Laptop"
-        ]
-        new_host = f"{random.choice(host_pool)}-{random.randint(100, 999)}"
+        # 2. Set Device Hostname (Custom or Random)
+        if self.custom_hostname:
+            new_host = self.custom_hostname.replace(" ", "-")
+        else:
+            host_pool = [
+                "iPhone-14-Pro", "iPad-Air", "Galaxy-S23", "Pixel-8-Pro", 
+                "MacBook-Pro-M2", "Dell-XPS-15", "ThinkPad-X1", "Smart-TV-LG",
+                "Workstation-X", "Ubuntu-Server", "Surface-Laptop"
+            ]
+            new_host = f"{random.choice(host_pool)}-{random.randint(100, 999)}"
+            
         subprocess.run(["hostname", new_host], capture_output=True)
         self.current_hostname = new_host
 
@@ -368,7 +371,15 @@ def run_interactive_menu():
         chosen_mode = "tcp-syn"
     print(f" -> Selected Mode: {chosen_mode.upper()}")
 
-    # 5. MAC Address Policy
+    # 5. Hostname Policy
+    host_input = input("\n[?] Enter Custom Device Name (Hostname) [Default: Random Smart Device]: ").strip()
+    custom_host = host_input if host_input else None
+    if custom_host:
+        print(f" -> Device Hostname: {custom_host}")
+    else:
+        print(f" -> Device Hostname: Randomly Generated")
+
+    # 6. MAC Address Policy
     print("\n[+] MAC Address Randomization Policy:")
     print("  [1] Keep Current MAC (Recommended for stable active Wi-Fi)")
     print("  [2] Randomize MAC Address (Full Hardware Spoofing)")
@@ -385,7 +396,8 @@ def run_interactive_menu():
         port=chosen_port,
         interfaces=chosen_ifaces,
         mode=chosen_mode,
-        skip_mac=skip_mac
+        skip_mac=skip_mac,
+        custom_hostname=custom_host
     )
     engine.start()
 
@@ -416,6 +428,11 @@ def main():
         help="Network interface(s) to bind (e.g. -i wlp4s0 wlp9s0f4u2 or 'all')"
     )
     parser.add_argument(
+        "-H", "--hostname",
+        default=None,
+        help="Custom device name/hostname to appear on target (Default: Random smart device)"
+    )
+    parser.add_argument(
         "-m", "--mode",
         choices=["tcp-syn", "udp", "icmp", "tcp-ack"],
         default="tcp-syn",
@@ -442,7 +459,8 @@ def main():
         port=args.port,
         interfaces=cli_ifaces,
         mode=args.mode,
-        skip_mac=args.no_mac
+        skip_mac=args.no_mac,
+        custom_hostname=args.hostname
     )
     engine.start()
 
