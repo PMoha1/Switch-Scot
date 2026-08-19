@@ -1,49 +1,41 @@
 # Switch-Scot ⚡
 
 > **Universal High-Performance Multi-Interface Network Resilience & Load Testing Engine**  
-> Engineered for Linux (Arch, Kali, Debian, Ubuntu, Fedora) and Android (Termux with Root).
+> **محرك تقييم واختبار مرونة وأحمال الشبكات متعدد الواجهات وعابر للمنصات**  
+> *Engineered for Linux (Arch, Kali, Debian, Ubuntu, Fedora) and Android (Termux with Root).*
+
+[![GitHub license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Platform](https://img.shields.io/badge/platform-Linux%20%7C%20Android%20Termux-brightgreen.svg)]()
+[![Language](https://img.shields.io/badge/Language-Arabic%20%7C%20English-orange.svg)]()
 
 ---
 
-## 📌 Overview
+## 🌟 Key Features / المميزات الرئيسية
 
-**Switch-Scot** is a lightweight, zero-dependency network stress testing framework engineered to assess network infrastructure resilience, firewall capacity, and gateway load tolerance under controlled laboratory environments.
-
-### 🌟 Key Features
-- **Smart URL & Domain Auto-Extractor:** Pass raw IPs or full web login URLs (e.g. `http://router.lan:8080/login.html`); the engine automatically resolves the IP and port and channels raw Layer 4 traffic to the destination.
-- **Simultaneous Multi-Interface Engine:** Bind and launch parallel high-throughput traffic across multiple Wi-Fi/Ethernet cards simultaneously (`1,2` or `all`).
-- **Interactive Easy-Menu (like Wifite):** Simple numbered prompts with smart auto-detection.
-- **Zero External Python Dependencies:** 100% built on Python standard libraries.
-- **Dynamic Platform Adaptation:** Automatically detects Termux (`tsu`) vs standard Linux (`sudo`).
-- **Carrier & Route Synchronization:** Intelligently verifies link carrier state and route table readiness before launching traffic.
-- **Persistent Obfuscation Layer:**
-  - Automated MAC address rotation via `macchanger` across all selected adapters.
-  - OS Fingerprint obfuscation via dynamic TTL randomization (64–128).
-  - Device hostname spoofing.
-  - ARP cache flushing.
-- **Multi-Protocol Evaluation Modes:**
-  - `tcp-syn`: TCP SYN Connection Load *(Default)*
-  - `udp`: UDP Stateless Buffer Stress
-  - `icmp`: ICMP Echo Control Plane Latency
-  - `tcp-ack`: TCP ACK Stateful Filter Inspection
+- **🌐 Dual-Language Interface (عربي / English):** واجهة تفاعلية كاملة تدعم اللغة العربية والإنجليزية باحترافية.
+- **🚀 Simultaneous Multi-Interface Engine:** تشغيل وتوجيه حزم متوازية عبر كروت شبكة متعددة معاً (`1,2` أو `all`) لمضاعفة قوة التدفق.
+- **🎯 Smart URL & Domain Auto-Extractor:** استخراج الـ IP والمنفذ تلقائياً من روابط صفحات الويب (مثل `http://192.168.8.1:8080/login.html`).
+- **📱 True Cross-Platform:** متوافق بنسبة 100% مع أندرويد (تيرمكس عبر `tsu`) وجميع توزيعات لينكس (آرش، كالي، أوبونتو، فيدورا عبر `sudo`).
+- **🛡️ 5-Layer Obfuscation Stack:** تمويه كامل (تدوير MAC، تدوير TTL عشوائياً بين 64 و 128، انتحال Hostname مخصص، مسح ذاكرة ARP، وتزوير IP الحزم `--rand-source`).
+- **📊 Real-Time Live Monitor:** شاشة مراقبة لحظية مدمجة لحساب معدل الحزم في الثانية (PPS) وسرعة التدفق (Mbps).
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start / التثبيت السريع
 
-### Automated Installation
 ```bash
 git clone https://github.com/PMoha1/Switch-Scot.git
 cd Switch-Scot
+chmod +x install.sh
 ./install.sh
 ```
 
 ---
 
-## 💻 Usage
+## 💻 Usage / دليل التشغيل
 
-### 1. Interactive Mode (Easy Numbered Menu):
-Simply run the command with `sudo` and follow the numbers:
+### 1. القائمة التفاعلية السهلة (Interactive Easy-Menu):
+فقط اكتب الأمر التالي وستفتح لك القائمة التفاعلية باللغة العربية:
 ```bash
 sudo switch-scot
 ```
@@ -54,65 +46,76 @@ sudo switch-scot
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Multi-Interface Network Resilience Engine v3.1
+ Universal Multi-Interface Network Resilience Engine v3.5 [AR/EN]
 
 =================================================================
- 🛠️  INTERACTIVE EASY SETUP MENU
+ [1] 🇸🇦 العربية (Arabic)
+ [2] 🇬🇧 English
+=================================================================
+[؟/Query] Select Language / اختر اللغة [1-2, default 1]: 1
+
+=================================================================
+ 🛠️  لوحة التحكم والإعداد التفاعلي السريع (Switch-Scot)
 =================================================================
 
-[+] Detected Network Interfaces:
-  [1] wlp4s0 (Default)
+[+] كروت الشبكة المكتشفة في النظام:
+  [1] wlp4s0 (الافتراضي)
   [2] wlp9s0f4u2
   [3] enp3s0
-  [A] ALL Interfaces Simultaneously (Multi-Card Turbo Mode 🚀)
+  [A] تشغيل جميع الكروت معاً في نفس اللحظة (وضع التيربو الخارق 🚀)
 
-[?] Select Interface(s) [e.g. 1, 1,2, or A for all - default 1]: 1,2
- -> Selected: wlp4s0, wlp9s0f4u2
+[؟] اختر كرت الشبكة [مثال: 1 أو 1,2 أو A للكل - الافتراضي 1]: 1,2
+ -> تم تحديد الكروت: wlp4s0, wlp9s0f4u2
 
-[?] Enter Target IP or Web Login URL [Default: 192.168.8.1]: http://192.168.8.1:8080/html/index.html
- -> Target Host/IP : 192.168.8.1
- -> Extracted Port  : 8080 (Auto-resolved from URL)
+[؟] أدخل عنوان الهدف (IP أو رابط صفحة الويب) [الافتراضي: 192.168.8.1]: 
+ -> عنوان الهدف المعتمد (Host/IP): 192.168.8.1
 
-[?] Enter Target Port [Default: 8080]: 
- -> Final Port: 8080
+[؟] أدخل رقم المنفذ المستهدف [الافتراضي: 80]: 80
+ -> المنفذ النهائي: 80
 
-[+] Evaluation Modes:
-  [1] TCP-SYN  - Connection Table Saturation (Default)
-  [2] UDP      - Stateless Buffer Stress
-  [3] ICMP     - Control Plane Latency
-  [4] TCP-ACK  - Stateful Firewall Inspection
+[+] أوضاع الفحص والتقييم:
+  [1] 1. TCP-SYN  - استنزاف طابور الاتصالات في النواة (الافتراضي / الأقوى)
+  [2] 2. UDP      - ضغط واختبار ذاكرة التخزين المؤقتة (Buffer Stress)
+  [3] 3. ICMP     - قياس استجابة وتأخير معالج الراوتر (Control Plane)
+  [4] 4. TCP-ACK  - اختبار فلاتر جدران الحماية المتقدمة (Stateful Firewall)
 
-[?] Select Mode [1-4, default 1]: 1
- -> Selected Mode: TCP-SYN
+[؟] اختر وضع الفحص [1-4، الافتراضي 1]: 1
+ -> الوضع المعتمد: TCP-SYN
 
-[+] MAC Address Randomization Policy:
-  [1] Keep Current MAC (Recommended for stable active Wi-Fi)
-  [2] Randomize MAC Address (Full Hardware Spoofing)
+[؟] أدخل اسم الجهاز المخصص ليظهر في الراوتر [الافتراضي: جهاز ذكي عشوائي]: Moha-Device
+ -> اسم الجهاز المنحول: Moha-Device
 
-[?] Select MAC Policy [1-2, default 1]: 1
- -> MAC Policy: Keep Active MAC (Safe Wi-Fi)
+[+] سياسة تمويه وتدوير الماك أدرس (MAC Address):
+  [1] 1. الاحتفاظ بالماك الحالي (موصى به للواي فاي النشط على اللابتوب)
+  [2] 2. تدوير الماك بالكامل عشوائياً (تمويه فيزيائي شامل لكرت الشبكة)
+
+[؟] اختر سياسة الماك [1-2، الافتراضي 1]: 1
+ -> سياسة الماك: الاحتفاظ بالماك الحالي لضمان استقرار الواي فاي
 
 -----------------------------------------------------------------
-⚡ Press [ENTER] to launch Switch-Scot on all selected interfaces...
+⚡ اضغط [ENTER] لإطلاق محرك Switch-Scot والبدء فوراً...
 ```
 
-### 2. Fast CLI Mode:
+---
+
+### 2. وضع سطر الأوامر المباشر (CLI Fast Mode):
 ```bash
-# Pass URL directly in CLI (auto-extracts IP and Port)
+# تشغيل مباشر مع رابط صفحة ويب وحفظ الماك:
 sudo switch-scot -t "http://192.168.8.1:8080/login.html" --no-mac
 
-# Multi-interface parallel execution
-sudo switch-scot -i wlp4s0 wlp9s0f4u2 -t 192.168.8.1 -p 80 --no-mac
+# تشغيل كرتين معاً بالتوازي مع تحديد اسم جهاز مخصص:
+sudo switch-scot -i wlp4s0 wlp9s0f4u2 -t 192.168.8.1 -p 80 -H "Smart-TV" --no-mac
 
-# Live PPS & Throughput Monitor
+# تشغيل شاشة المراقبة اللحظية:
 switch-scot-monitor
 ```
 
 ---
 
-## ⚠️ Disclaimer
+## ⚠️ Disclaimer / إخلاء مسؤولية
 
-This tool is strictly developed for educational purposes, authorized security assessments, and network resilience testing. Usage against unauthorized targets without explicit prior consent is strictly prohibited. The author assumes no liability for misuse.
+This tool is strictly developed for educational purposes, authorized security assessments, and network resilience testing. Usage against unauthorized targets without explicit prior consent is strictly prohibited. The author assumes no liability for misuse.  
+تم تطوير هذه الأداة حصرياً للأغراض التعليمية واختبار مرونة وقدرة الشبكات المصرح بفحصها. يُحظر استخدامها ضد أي أهداف غير مصرح بها.
 
 ---
 

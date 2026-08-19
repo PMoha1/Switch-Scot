@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Switch-Scot Monitor ⚡
+Real-Time Live Network Throughput & PPS Monitor [AR/EN]
+"""
+
 import time
 import os
 import sys
@@ -18,9 +25,9 @@ def get_stats():
     return res
 
 print("\033[2J\033[H", end="")
-print("=" * 60)
-print(" ⚡ LIVE NETWORK THROUGHPUT MONITOR (PPS & SPEED)")
-print("=" * 60)
+print("=" * 65)
+print(" ⚡ شاشة المراقبة اللحظية لتدفق الحزم والسرعة (Switch-Scot Monitor)")
+print("=" * 65)
 
 try:
     while True:
@@ -29,11 +36,11 @@ try:
         s2 = get_stats()
         
         sys.stdout.write("\033[H\033[2K")
-        print("=" * 60)
-        print(" ⚡ LIVE NETWORK THROUGHPUT MONITOR (PPS & SPEED)")
-        print("=" * 60)
-        print(f"{'Interface':<16} | {'Packets/sec (PPS)':<18} | {'Speed (Mbps)':<12}")
-        print("-" * 60)
+        print("=" * 65)
+        print(" ⚡ شاشة المراقبة اللحظية لتدفق الحزم والسرعة (Switch-Scot Monitor)")
+        print("=" * 65)
+        print(f"{'الكرت (Interface)':<18} | {'حزمة/ثانية (PPS)':<20} | {'السرعة (Mbps)':<14}")
+        print("-" * 65)
         
         tot_pps = 0
         tot_mbps = 0.0
@@ -45,13 +52,13 @@ try:
                 mbps = (b2 - b1) * 8 / 1_000_000
                 tot_pps += pps
                 tot_mbps += mbps
-                if pps > 0 or iface.startswith('wl'):
-                    print(f"{iface:<16} | {pps:>18,} | {mbps:>10.2f} Mbps")
+                if pps > 0 or iface.startswith('wl') or iface.startswith('en'):
+                    print(f"{iface:<18} | {pps:>20,} | {mbps:>12.2f} Mbps")
         
-        print("-" * 60)
-        print(f"{'TOTAL COMBINED':<16} | {tot_pps:>18,} | {tot_mbps:>10.2f} Mbps")
-        print("=" * 60)
-        print(" Press Ctrl+C to exit.")
+        print("-" * 65)
+        print(f"{'المجموع الإجمالي':<18} | {tot_pps:>20,} | {tot_mbps:>12.2f} Mbps")
+        print("=" * 65)
+        print(" اضغط Ctrl+C للإغلاق والخروج. (Press Ctrl+C to exit)")
         sys.stdout.flush()
 except KeyboardInterrupt:
-    print("\n[+] Monitor stopped.")
+    print("\n[+] تم إيقاف شاشة المراقبة.")
