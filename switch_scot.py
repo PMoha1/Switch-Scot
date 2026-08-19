@@ -20,65 +20,80 @@ import socket
 from urllib.parse import urlparse
 from datetime import datetime
 
-BANNER = r"""
+def ar(text):
+    """Re-shapes and applies BiDi algorithm to render Arabic correctly in terminals like QTerminal, Xterm, Alacritty."""
+    if not text:
+        return text
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+        reshaper = arabic_reshaper.ArabicReshaper(configuration={'delete_harakat': False, 'support_ligatures': True})
+        reshaped = reshaper.reshape(str(text))
+        return get_display(reshaped)
+    except Exception:
+        return text
+
+def get_banner():
+    dev_ar = ar("المطور : محمد يقين مجمل الفايق | صنعاء - اليمن")
+    return f"""
    _____         _ _       _         ____             _   
   / ____|       (_) |     | |       / ____|          | |  
  | (_____      ___| |_ ___| |__ ___| (___   ___  ___ | |_ 
-  \___ \ \ /\ / / | __/ __| '_ \_____\___ \ / __|/ _ \| __|
-  ____) \ V  V /| | || (__| | | |    ____) | (__| (_) | |_ 
- |_____/ \_/\_/ |_|\__\___|_| |_|   |_____/ \___|\___/ \__|
-                                                           ⚡ v3.6
- 🇾🇪 المطور : محمد يقين مجمل الفايق | صنعاء - اليمن
+  \\___ \\ \\ /\\ / / | __/ __| '_ \\_____\\___ \\ / __|/ _ \\| __|
+  ____) \\ V  V /| | || (__| | | |    ____) | (__| (_) | |_ 
+ |_____/ \\_/\\_/ |_|\\__\\___|_| |_|   |_____/ \\___|\\___/ \\__|
+                                                           ⚡ v3.7
+ 🇾🇪 {dev_ar}
  🇾🇪 Author : Mohammed Yaqeen | Sana'a - Yemen
 """
 
 MESSAGES = {
     "ar": {
-        "menu_title": "=== لوحة التحكم والتشغيل التفاعلي السريع ===",
-        "detected_ifaces": "* كروت الشبكة المكتشفة في جهازك:",
-        "all_ifaces": "A. تشغيل كل الكروت معاً في نفس الوقت (وضع التيربو الخارق)",
-        "select_iface": ">> رقم الكرت المطلوب [الافتراضي 1]: ",
-        "selected_iface": "* الكروت المختارة: ",
-        "enter_target": ">> عنوان الهدف أو الرابط [الافتراضي {default}]: ",
-        "target_ip": "* عنوان الهدف: ",
-        "extracted_port": "* المنفذ المستخرج تلقائياً: ",
-        "enter_port": ">> رقم المنفذ المطلوب [الافتراضي {default}]: ",
-        "final_port": "* المنفذ النهائي: ",
-        "modes_title": "* أوضاع الفحص والتقييم المتاحة:",
-        "mode_1": "1. TCP-SYN (استنزاف طابور اتصالات الراوتر - الأقوى)",
-        "mode_2": "2. UDP (ضغط الذاكرة المؤقتة للراوتر)",
-        "mode_3": "3. ICMP (قياس سرعة استجابة وتأخير المعالج)",
-        "mode_4": "4. TCP-ACK (فحص واختبار جدار الحماية)",
-        "select_mode": ">> رقم وضع الفحص [الافتراضي 1]: ",
-        "selected_mode": "* الوضع المعتمد: ",
-        "hostname_prompt": ">> اسم الجهاز المنحول ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
-        "custom_host_set": "* اسم الجهاز المعتمد: ",
-        "random_host_set": "* اسم الجهاز: توليد ذكي عشوائي",
-        "mac_title": "* خيارات الماك أدرس (MAC Address):",
-        "mac_1": "1. الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)",
-        "mac_2": "2. تدوير الماك عشوائياً (تمويه فيزيائي شامل)",
-        "select_mac": ">> خيار الماك [الافتراضي 1]: ",
-        "mac_safe": "* سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال",
-        "mac_random": "* سياسة الماك: تدوير الماك عشوائياً",
-        "press_enter": ">> اضغط ENTER للبدء والانطلاق فوراً...",
-        "engine_active": "⚡ محرك SWITCH-SCOT يعمل الآن بأقصى طاقة ⚡",
-        "platform": "* بيئة التشغيل : ",
-        "interfaces": "* كروت الشبكة : ",
-        "hostname": "* اسم الجهاز  : ",
-        "mode_info": "* وضع الفحص  : ",
-        "press_ctrl_c": "\n[*] اضغط Ctrl+C في أي وقت لإيقاف العملية بأمان.\n",
-        "running_status": "\r>> [جاري الضخ] الهدف: {target}:{port} | الكروت النشطة: {ifaces} | النمط: {mode} | الوقت: {elapsed} ",
-        "stopped": "\n\n[+] تم إيقاف عملية الضخ بنجاح.",
-        "root_error_termux": "\n[!] تنبيه: يلزم صلاحيات الروت. اكتب tsu أولاً ثم شغل الأداة.",
-        "root_error_linux": "\n[!] تنبيه: يلزم صلاحيات الروت. شغل الأداة بأمر sudo switch-scot",
-        "missing_tools": "\n[!] تنبيه: هناك أدوات مفقودة في نظامك: {tools}",
-        "termux_install_hint": "[*] للتثبيت على تيرمكس: pkg install root-repo && pkg install tsu hping3 macchanger iproute2",
-        "debian_install_hint": "[*] للتثبيت على دبيان أو كالي: sudo apt install -y hping3 macchanger iproute2",
-        "arch_install_hint": "[*] للتثبيت على آرش لينكس: sudo pacman -S --noconfirm hping macchanger iproute2",
-        "applying_stealth": "\n[*] جاري تطبيق التمويه وتجهيز الهوية...",
-        "verifying_carrier": "[*] جاري التحقق من جاهزية كرت الشبكة ومسار التوجيه على {iface}...",
-        "carrier_ready": "[+] كرت الشبكة {iface} متصل ومسار التوجيه إلى {target} جاهز.",
-        "carrier_timeout": "[!] تنبيه: تم بدء الإرسال المباشر على {iface}."
+        "menu_title": ar("=== لوحة التحكم والتشغيل التفاعلي السريع ==="),
+        "detected_ifaces": ar("* كروت الشبكة المكتشفة في جهازك:"),
+        "all_ifaces": "A. " + ar("تشغيل كل الكروت معاً في نفس الوقت (وضع التيربو الخارق 🚀)"),
+        "select_iface": ">> " + ar("رقم الكرت المطلوب [الافتراضي 1]: "),
+        "selected_iface": "* " + ar("الكروت المختارة: "),
+        "enter_target": ">> " + ar("عنوان الهدف أو الرابط [الافتراضي {default}]: "),
+        "target_ip": "* " + ar("عنوان الهدف: "),
+        "extracted_port": "* " + ar("المنفذ المستخرج تلقائياً: "),
+        "enter_port": ">> " + ar("رقم المنفذ المطلوب [الافتراضي {default}]: "),
+        "final_port": "* " + ar("المنفذ النهائي: "),
+        "modes_title": ar("* أوضاع الفحص والتقييم المتاحة:"),
+        "mode_1": "1. TCP-SYN " + ar("(استنزاف طابور اتصالات الراوتر - الأقوى)"),
+        "mode_2": "2. UDP " + ar("(ضغط الذاكرة المؤقتة للراوتر)"),
+        "mode_3": "3. ICMP " + ar("(قياس سرعة استجابة وتأخير المعالج)"),
+        "mode_4": "4. TCP-ACK " + ar("(فحص واختبار جدار الحماية)"),
+        "select_mode": ">> " + ar("رقم وضع الفحص [الافتراضي 1]: "),
+        "selected_mode": "* " + ar("الوضع المعتمد: "),
+        "hostname_prompt": ">> " + ar("اسم الجهاز المنحول في الراوتر [اضغط Enter للاسم العشوائي]: "),
+        "custom_host_set": "* " + ar("اسم الجهاز المعتمد: "),
+        "random_host_set": "* " + ar("اسم الجهاز: توليد ذكي عشوائي"),
+        "mac_title": ar("* خيارات الماك أدرس (MAC Address):"),
+        "mac_1": "1. " + ar("الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)"),
+        "mac_2": "2. " + ar("تدوير الماك عشوائياً (تمويه فيزيائي شامل)"),
+        "select_mac": ">> " + ar("خيار الماك [الافتراضي 1]: "),
+        "mac_safe": "* " + ar("سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال"),
+        "mac_random": "* " + ar("سياسة الماك: تدوير الماك عشوائياً"),
+        "press_enter": ">> " + ar("اضغط ENTER للبدء والانطلاق فوراً..."),
+        "engine_active": "⚡ " + ar("محرك SWITCH-SCOT يعمل الآن بأقصى طاقة") + " ⚡",
+        "platform": "* " + ar("بيئة التشغيل : "),
+        "interfaces": "* " + ar("كروت الشبكة : "),
+        "hostname": "* " + ar("اسم الجهاز  : "),
+        "mode_info": "* " + ar("وضع الفحص  : "),
+        "press_ctrl_c": "\n[*] " + ar("اضغط Ctrl+C في أي وقت لإيقاف العملية بأمان.") + "\n",
+        "running_status": "\r>> [" + ar("جاري الضخ") + "] " + ar("الهدف:") + " {target}:{port} | " + ar("الكروت:") + " [{ifaces}] | " + ar("النمط:") + " {mode} | " + ar("الوقت:") + " {elapsed} ",
+        "stopped": "\n\n[+] " + ar("تم إيقاف عملية الضخ بنجاح على جميع الكروت."),
+        "root_error_termux": "\n[!] " + ar("تنبيه: يلزم صلاحيات الروت. اكتب tsu أولاً ثم شغل الأداة."),
+        "root_error_linux": "\n[!] " + ar("تنبيه: يلزم صلاحيات الروت. شغل الأداة بأمر sudo switch-scot"),
+        "missing_tools": "\n[!] " + ar("تنبيه: هناك أدوات مفقودة في نظامك:") + " {tools}",
+        "termux_install_hint": "[*] " + ar("للتثبيت على تيرمكس: pkg install root-repo && pkg install tsu hping3 macchanger iproute2"),
+        "debian_install_hint": "[*] " + ar("للتثبيت على دبيان أو كالي: sudo apt install -y hping3 macchanger iproute2"),
+        "arch_install_hint": "[*] " + ar("للتثبيت على آرش لينكس: sudo pacman -S --noconfirm hping macchanger iproute2"),
+        "applying_stealth": "\n[*] " + ar("جاري تطبيق التمويه وتجهيز الهوية..."),
+        "verifying_carrier": "[*] " + ar("جاري التحقق من جاهزية كرت الشبكة ومسار التوجيه على") + " {iface}...",
+        "carrier_ready": "[+] " + ar("كرت الشبكة") + " {iface} " + ar("متصل ومسار التوجيه إلى") + " {target} " + ar("جاهز."),
+        "carrier_timeout": "[!] " + ar("تنبيه: تم بدء الإرسال المباشر على") + " {iface}."
     },
     "en": {
         "menu_title": "=== Switch-Scot Interactive Setup Menu ===",
@@ -407,13 +422,13 @@ class SwitchScot:
         sys.exit(0)
 
 def run_interactive_menu():
-    print(BANNER)
+    print(get_banner())
     
     print("=" * 65)
-    print(" 1. 🇾🇪 اللغة العربية (Arabic)")
+    print(" 1. 🇾🇪 " + ar("اللغة العربية") + " (Arabic)")
     print(" 2. 🏴‍☠️ English")
     print("=" * 65)
-    lang_sel = input(">> Select Language / اختر اللغة [Default 1]: ").strip()
+    lang_sel = input(">> Select Language / " + ar("اختر اللغة") + " [Default 1]: ").strip()
     lang = "en" if lang_sel == "2" else "ar"
     msg = MESSAGES[lang]
 
@@ -426,7 +441,7 @@ def run_interactive_menu():
     
     print(f"\n{msg['detected_ifaces']}")
     for idx, iface in enumerate(ifaces, start=1):
-        tag = " (الافتراضي)" if idx == 1 and lang == "ar" else (" (Default)" if idx == 1 else "")
+        tag = f" ({ar('الافتراضي')})" if idx == 1 and lang == "ar" else (" (Default)" if idx == 1 else "")
         print(f"  {idx}. {iface}{tag}")
     print(f"  {msg['all_ifaces']}")
     

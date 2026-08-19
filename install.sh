@@ -12,20 +12,23 @@ if [ -n "$PREFIX" ] && [ -d "$PREFIX" ] && echo "$PREFIX" | grep -q "com.termux"
     echo "[+] Detected Environment: Android (Termux) / تم اكتشاف بيئة تيرمكس"
     pkg update -y
     pkg install -y root-repo
-    pkg install -y tsu hping3 macchanger iproute2 python
+    pkg install -y tsu hping3 macchanger iproute2 python python-pip
+    pip install arabic-reshaper python-bidi
     BIN_DIR="$PREFIX/bin"
 elif command -v pacman >/dev/null 2>&1; then
     echo "[+] Detected Environment: Arch Linux / تم اكتشاف آرش لينكس"
-    sudo pacman -Sy --noconfirm hping macchanger iproute2 python
+    sudo pacman -Sy --noconfirm hping macchanger iproute2 python python-pip
+    sudo pacman -S --noconfirm python-arabic-reshaper python-bidi 2>/dev/null || pip install arabic-reshaper python-bidi --break-system-packages 2>/dev/null || true
     BIN_DIR="/usr/local/bin"
 elif command -v apt-get >/dev/null 2>&1; then
     echo "[+] Detected Environment: Debian / Ubuntu / Kali Linux / تم اكتشاف كالي/دبيان"
     sudo apt-get update -y
-    sudo apt-get install -y hping3 macchanger iproute2 python3
+    sudo apt-get install -y hping3 macchanger iproute2 python3 python3-pip python3-arabic-reshaper python3-bidi || pip3 install arabic-reshaper python-bidi --break-system-packages 2>/dev/null || true
     BIN_DIR="/usr/local/bin"
 elif command -v dnf >/dev/null 2>&1; then
     echo "[+] Detected Environment: Fedora / RHEL / تم اكتشاف فيدورا"
-    sudo dnf install -y hping3 macchanger iproute python3
+    sudo dnf install -y hping3 macchanger iproute python3 python3-pip
+    pip3 install arabic-reshaper python-bidi 2>/dev/null || true
     BIN_DIR="/usr/local/bin"
 else
     echo "[!] Unrecognized package manager. Please manually install: hping3, macchanger, iproute2, python3"

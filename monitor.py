@@ -10,6 +10,18 @@ import time
 import os
 import sys
 
+def ar(text):
+    if not text:
+        return text
+    try:
+        import arabic_reshaper
+        from bidi.algorithm import get_display
+        reshaper = arabic_reshaper.ArabicReshaper(configuration={'delete_harakat': False, 'support_ligatures': True})
+        reshaped = reshaper.reshape(str(text))
+        return get_display(reshaped)
+    except Exception:
+        return text
+
 def get_stats():
     res = {}
     ifaces = [f for f in os.listdir('/sys/class/net') if f != 'lo']
@@ -24,9 +36,16 @@ def get_stats():
             pass
     return res
 
+title = "⚡ " + ar("شاشة المراقبة اللحظية لتدفق الحزم والسرعة") + " (Switch-Scot Monitor)"
+header_iface = ar("الكرت") + " (Interface)"
+header_pps = ar("حزمة/ثانية") + " (PPS)"
+header_mbps = ar("السرعة") + " (Mbps)"
+total_label = ar("المجموع الإجمالي")
+exit_hint = ar("اضغط Ctrl+C للإغلاق والخروج.") + " (Press Ctrl+C to exit)"
+
 print("\033[2J\033[H", end="")
 print("=" * 65)
-print(" ⚡ شاشة المراقبة اللحظية لتدفق الحزم والسرعة (Switch-Scot Monitor)")
+print(f" {title}")
 print("=" * 65)
 
 try:
@@ -37,9 +56,9 @@ try:
         
         sys.stdout.write("\033[H\033[2K")
         print("=" * 65)
-        print(" ⚡ شاشة المراقبة اللحظية لتدفق الحزم والسرعة (Switch-Scot Monitor)")
+        print(f" {title}")
         print("=" * 65)
-        print(f"{'الكرت (Interface)':<18} | {'حزمة/ثانية (PPS)':<20} | {'السرعة (Mbps)':<14}")
+        print(f"{header_iface:<24} | {header_pps:<24} | {header_mbps:<14}")
         print("-" * 65)
         
         tot_pps = 0
@@ -53,12 +72,12 @@ try:
                 tot_pps += pps
                 tot_mbps += mbps
                 if pps > 0 or iface.startswith('wl') or iface.startswith('en'):
-                    print(f"{iface:<18} | {pps:>20,} | {mbps:>12.2f} Mbps")
+                    print(f"{iface:<24} | {pps:>24,} | {mbps:>12.2f} Mbps")
         
         print("-" * 65)
-        print(f"{'المجموع الإجمالي':<18} | {tot_pps:>20,} | {tot_mbps:>12.2f} Mbps")
+        print(f"{total_label:<24} | {tot_pps:>24,} | {tot_mbps:>12.2f} Mbps")
         print("=" * 65)
-        print(" اضغط Ctrl+C للإغلاق والخروج. (Press Ctrl+C to exit)")
+        print(f" {exit_hint}")
         sys.stdout.flush()
 except KeyboardInterrupt:
-    print("\n[+] تم إيقاف شاشة المراقبة.")
+    print("\n[+] " + ar("تم إيقاف شاشة المراقبة."))
