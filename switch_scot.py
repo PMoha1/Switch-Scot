@@ -165,6 +165,8 @@ class SwitchScot:
 
     def build_command(self):
         base_cmd = ["hping3", "--flood", "--rand-source"]
+        if self.interface:
+            base_cmd += ["-I", self.interface]
         
         if self.mode == "tcp-syn":
             return base_cmd + ["-p", str(self.port), "-S", self.target]
