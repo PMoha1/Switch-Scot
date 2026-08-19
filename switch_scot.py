@@ -5,6 +5,7 @@
 Switch-Scot ⚡
 Universal Multi-Interface Network Resilience & Load Testing Engine
 Designed for Linux (Arch, Kali, Debian, Ubuntu) and Android (Termux)
+Developed by: Mohammed Yaqeen (Yemen - Sana'a) | محمد يقين مجمل الفايق
 """
 
 import os
@@ -20,100 +21,100 @@ from urllib.parse import urlparse
 from datetime import datetime
 
 BANNER = r"""
-  ___         _ _       _          ___ cot ⚡
- / __|_ __ __(_) |_ ___| |_ _____ / __| __ ___ 
- \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
- |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
-                                         |_|   
- Universal Multi-Interface Network Resilience Engine v3.5
- 🇾🇪 Developed by: Mohammed Yaqeen (Yemen - Sana'a)
- 🇾🇪 المطور: محمد يقين مجمل الفايق (اليمن - صنعاء)
+   _____         _ _       _         ____             _   
+  / ____|       (_) |     | |       / ____|          | |  
+ | (_____      ___| |_ ___| |__ ___| (___   ___  ___ | |_ 
+  \___ \ \ /\ / / | __/ __| '_ \_____\___ \ / __|/ _ \| __|
+  ____) \ V  V /| | || (__| | | |    ____) | (__| (_) | |_ 
+ |_____/ \_/\_/ |_|\__\___|_| |_|   |_____/ \___|\___/ \__|
+                                                           ⚡ v3.6
+ 🇾🇪 المطور : محمد يقين مجمل الفايق | صنعاء - اليمن
+ 🇾🇪 Author : Mohammed Yaqeen | Sana'a - Yemen
 """
 
-# القواميس اللغوية للدعم الكامل للغة العربية والإنجليزية
 MESSAGES = {
     "ar": {
-        "menu_title": "🛠️  لوحة التحكم والإعداد التفاعلي السريع (Switch-Scot)",
-        "detected_ifaces": "[+] كروت الشبكة المكتشفة في النظام:",
-        "all_ifaces": "[A] تشغيل جميع الكروت معاً في نفس اللحظة (وضع التيربو الخارق 🚀)",
-        "select_iface": "[؟] اختر كرت الشبكة [مثال: 1 أو 1,2 أو A للكل - الافتراضي 1]: ",
-        "selected_iface": "-> تم تحديد الكروت: ",
-        "enter_target": "[؟] أدخل عنوان الهدف (IP أو رابط صفحة الويب) [الافتراضي: {default}]: ",
-        "target_ip": "-> عنوان الهدف المعتمد (Host/IP): ",
-        "extracted_port": "-> المنفذ المستخرج تلقائياً: ",
-        "enter_port": "[؟] أدخل رقم المنفذ المستهدف [الافتراضي: {default}]: ",
-        "final_port": "-> المنفذ النهائي: ",
-        "modes_title": "[+] أوضاع الفحص والتقييم:",
-        "mode_1": "1. TCP-SYN  - استنزاف طابور الاتصالات في النواة (الافتراضي / الأقوى)",
-        "mode_2": "2. UDP      - ضغط واختبار ذاكرة التخزين المؤقتة (Buffer Stress)",
-        "mode_3": "3. ICMP     - قياس استجابة وتأخير معالج الراوتر (Control Plane)",
-        "mode_4": "4. TCP-ACK  - اختبار فلاتر جدران الحماية المتقدمة (Stateful Firewall)",
-        "select_mode": "[؟] اختر وضع الفحص [1-4، الافتراضي 1]: ",
-        "selected_mode": "-> الوضع المعتمد: ",
-        "hostname_prompt": "[؟] أدخل اسم الجهاز المخصص ليظهر في الراوتر [الافتراضي: جهاز ذكي عشوائي]: ",
-        "custom_host_set": "-> اسم الجهاز المنحول: ",
-        "random_host_set": "-> اسم الجهاز: توليد عشوائي ذكي",
-        "mac_title": "[+] سياسة تمويه وتدوير الماك أدرس (MAC Address):",
-        "mac_1": "1. الاحتفاظ بالماك الحالي (موصى به للواي فاي النشط على اللابتوب)",
-        "mac_2": "2. تدوير الماك بالكامل عشوائياً (تمويه فيزيائي شامل لكرت الشبكة)",
-        "select_mac": "[؟] اختر سياسة الماك [1-2، الافتراضي 1]: ",
-        "mac_safe": "-> سياسة الماك: الاحتفاظ بالماك الحالي لضمان استقرار الواي فاي",
-        "mac_random": "-> سياسة الماك: تدوير الماك بالكامل عبر macchanger",
-        "press_enter": "⚡ اضغط [ENTER] لإطلاق محرك Switch-Scot والبدء فوراً...",
-        "engine_active": "⚡ محرك SWITCH-SCOT يعمل الآن بأقصى طاقة",
-        "platform": "• بيئة التشغيل  : ",
-        "interfaces": "• كروت الشبكة  : ",
-        "hostname": "• اسم الجهاز   : ",
-        "mode_info": "• النمط والهدف  : ",
-        "press_ctrl_c": " [*] اضغط Ctrl+C لإيقاف العملية في أي وقت بأمان.\n",
-        "running_status": "\r >> [جاري الضخ] الهدف: {target}:{port} | الكروت النشطة: [{ifaces}] | النمط: {mode} | الوقت المنقضي: {elapsed} ",
-        "stopped": "\n\n[+] تم إيقاف محرك Switch-Scot بنجاح على جميع الكروت.",
-        "root_error_termux": "\n[!] خطأ: يتطلب صلاحيات الروت. قم بتشغيل 'tsu' أولاً ثم أعد التشغيل.",
-        "root_error_linux": "\n[!] خطأ: يتطلب صلاحيات الروت. قم بالتشغيل باستخدام 'sudo switch-scot'.",
-        "missing_tools": "\n[!] تنبيه: هناك أدوات نظامية مفقودة: {tools}",
+        "menu_title": "=== لوحة التحكم والتشغيل التفاعلي السريع ===",
+        "detected_ifaces": "* كروت الشبكة المكتشفة في جهازك:",
+        "all_ifaces": "A. تشغيل كل الكروت معاً في نفس الوقت (وضع التيربو الخارق)",
+        "select_iface": ">> رقم الكرت المطلوب [الافتراضي 1]: ",
+        "selected_iface": "* الكروت المختارة: ",
+        "enter_target": ">> عنوان الهدف أو الرابط [الافتراضي {default}]: ",
+        "target_ip": "* عنوان الهدف: ",
+        "extracted_port": "* المنفذ المستخرج تلقائياً: ",
+        "enter_port": ">> رقم المنفذ المطلوب [الافتراضي {default}]: ",
+        "final_port": "* المنفذ النهائي: ",
+        "modes_title": "* أوضاع الفحص والتقييم المتاحة:",
+        "mode_1": "1. TCP-SYN (استنزاف طابور اتصالات الراوتر - الأقوى)",
+        "mode_2": "2. UDP (ضغط الذاكرة المؤقتة للراوتر)",
+        "mode_3": "3. ICMP (قياس سرعة استجابة وتأخير المعالج)",
+        "mode_4": "4. TCP-ACK (فحص واختبار جدار الحماية)",
+        "select_mode": ">> رقم وضع الفحص [الافتراضي 1]: ",
+        "selected_mode": "* الوضع المعتمد: ",
+        "hostname_prompt": ">> اسم الجهاز المنحول ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
+        "custom_host_set": "* اسم الجهاز المعتمد: ",
+        "random_host_set": "* اسم الجهاز: توليد ذكي عشوائي",
+        "mac_title": "* خيارات الماك أدرس (MAC Address):",
+        "mac_1": "1. الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)",
+        "mac_2": "2. تدوير الماك عشوائياً (تمويه فيزيائي شامل)",
+        "select_mac": ">> خيار الماك [الافتراضي 1]: ",
+        "mac_safe": "* سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال",
+        "mac_random": "* سياسة الماك: تدوير الماك عشوائياً",
+        "press_enter": ">> اضغط ENTER للبدء والانطلاق فوراً...",
+        "engine_active": "⚡ محرك SWITCH-SCOT يعمل الآن بأقصى طاقة ⚡",
+        "platform": "* بيئة التشغيل : ",
+        "interfaces": "* كروت الشبكة : ",
+        "hostname": "* اسم الجهاز  : ",
+        "mode_info": "* وضع الفحص  : ",
+        "press_ctrl_c": "\n[*] اضغط Ctrl+C في أي وقت لإيقاف العملية بأمان.\n",
+        "running_status": "\r>> [جاري الضخ] الهدف: {target}:{port} | الكروت النشطة: {ifaces} | النمط: {mode} | الوقت: {elapsed} ",
+        "stopped": "\n\n[+] تم إيقاف عملية الضخ بنجاح.",
+        "root_error_termux": "\n[!] تنبيه: يلزم صلاحيات الروت. اكتب tsu أولاً ثم شغل الأداة.",
+        "root_error_linux": "\n[!] تنبيه: يلزم صلاحيات الروت. شغل الأداة بأمر sudo switch-scot",
+        "missing_tools": "\n[!] تنبيه: هناك أدوات مفقودة في نظامك: {tools}",
         "termux_install_hint": "[*] للتثبيت على تيرمكس: pkg install root-repo && pkg install tsu hping3 macchanger iproute2",
-        "debian_install_hint": "[*] للتثبيت على دبيان/كالي: sudo apt install -y hping3 macchanger iproute2",
+        "debian_install_hint": "[*] للتثبيت على دبيان أو كالي: sudo apt install -y hping3 macchanger iproute2",
         "arch_install_hint": "[*] للتثبيت على آرش لينكس: sudo pacman -S --noconfirm hping macchanger iproute2",
-        "applying_stealth": "\n[*] جاري تطبيق طبقة التمويه وإخفاء الهوية...",
-        "verifying_carrier": "[*] جاري التحقق من جاهزية الاتصال ومسار التوجيه على '{iface}'...",
-        "carrier_ready": "[+] الكرت '{iface}' متصل بالشبكة ومسار التوجيه إلى {target} جاهز.",
-        "carrier_timeout": "[!] تنبيه: انتهت مهلة فحص المسار، جاري بدء الإرسال المباشر على '{iface}'."
+        "applying_stealth": "\n[*] جاري تطبيق التمويه وتجهيز الهوية...",
+        "verifying_carrier": "[*] جاري التحقق من جاهزية كرت الشبكة ومسار التوجيه على {iface}...",
+        "carrier_ready": "[+] كرت الشبكة {iface} متصل ومسار التوجيه إلى {target} جاهز.",
+        "carrier_timeout": "[!] تنبيه: تم بدء الإرسال المباشر على {iface}."
     },
     "en": {
-        "menu_title": "🛠️  INTERACTIVE EASY SETUP MENU (Switch-Scot)",
-        "detected_ifaces": "[+] Detected Network Interfaces in System:",
-        "all_ifaces": "[A] ALL Interfaces Simultaneously (Multi-Card Turbo Mode 🚀)",
-        "select_iface": "[?] Select Interface(s) [e.g. 1, 1,2, or A for all - default 1]: ",
-        "selected_iface": "-> Selected Interface(s): ",
-        "enter_target": "[?] Enter Target IP or Web Login URL [Default: {default}]: ",
-        "target_ip": "-> Target Host/IP: ",
-        "extracted_port": "-> Auto-extracted Port: ",
-        "enter_port": "[?] Enter Target Port [Default: {default}]: ",
-        "final_port": "-> Final Target Port: ",
-        "modes_title": "[+] Evaluation Modes:",
-        "mode_1": "1. TCP-SYN  - Connection Table Saturation (Default / Maximum Stress)",
-        "mode_2": "2. UDP      - Stateless Buffer Stress",
-        "mode_3": "3. ICMP     - Control Plane Latency & CPU Load",
-        "mode_4": "4. TCP-ACK  - Stateful Firewall Filter Inspection",
-        "select_mode": "[?] Select Mode [1-4, default 1]: ",
-        "selected_mode": "-> Selected Mode: ",
-        "hostname_prompt": "[?] Enter Custom Device Name (Hostname) [Default: Random Smart Device]: ",
-        "custom_host_set": "-> Custom Device Hostname: ",
-        "random_host_set": "-> Device Hostname: Randomly Generated",
-        "mac_title": "[+] MAC Address Randomization Policy:",
-        "mac_1": "1. Keep Current MAC (Recommended for stable active Wi-Fi)",
-        "mac_2": "2. Randomize MAC Address (Full Hardware Spoofing)",
-        "select_mac": "[?] Select MAC Policy [1-2, default 1]: ",
-        "mac_safe": "-> MAC Policy: Keep Active MAC (Safe Wi-Fi)",
-        "mac_random": "-> MAC Policy: Randomize MAC Address (Full Spoof)",
-        "press_enter": "⚡ Press [ENTER] to launch Switch-Scot on all selected interfaces...",
-        "engine_active": "⚡ SWITCH-SCOT MULTI-INTERFACE ENGINE ACTIVE",
-        "platform": "• Platform   : ",
-        "interfaces": "• Interfaces : ",
-        "hostname": "• Hostname   : ",
-        "mode_info": "• Mode/Target: ",
-        "press_ctrl_c": " [*] Press Ctrl+C to terminate execution.\n",
-        "running_status": "\r >> [RUNNING] Target: {target}:{port} | Active Cards: [{ifaces}] | Mode: {mode} | Elapsed: {elapsed} ",
+        "menu_title": "=== Switch-Scot Interactive Setup Menu ===",
+        "detected_ifaces": "* Detected Network Interfaces:",
+        "all_ifaces": "A. Use ALL Interfaces Simultaneously (Turbo Mode 🚀)",
+        "select_iface": ">> Select Interface(s) [Default 1]: ",
+        "selected_iface": "* Selected Interfaces: ",
+        "enter_target": ">> Target IP or URL [Default {default}]: ",
+        "target_ip": "* Target Host/IP: ",
+        "extracted_port": "* Extracted Port: ",
+        "enter_port": ">> Target Port [Default {default}]: ",
+        "final_port": "* Final Port: ",
+        "modes_title": "* Available Evaluation Modes:",
+        "mode_1": "1. TCP-SYN (Connection Table Saturation - Strongest)",
+        "mode_2": "2. UDP (Stateless Buffer Stress)",
+        "mode_3": "3. ICMP (Control Plane Latency)",
+        "mode_4": "4. TCP-ACK (Stateful Firewall Inspection)",
+        "select_mode": ">> Select Mode [Default 1]: ",
+        "selected_mode": "* Selected Mode: ",
+        "hostname_prompt": ">> Custom Device Hostname [Press Enter for Random]: ",
+        "custom_host_set": "* Custom Hostname: ",
+        "random_host_set": "* Hostname: Random Smart Device",
+        "mac_title": "* MAC Address Policy:",
+        "mac_1": "1. Keep Current MAC (Recommended for stable Wi-Fi)",
+        "mac_2": "2. Randomize MAC Address (Full Spoof)",
+        "select_mac": ">> Select Policy [Default 1]: ",
+        "mac_safe": "* MAC Policy: Keep Current MAC",
+        "mac_random": "* MAC Policy: Randomize MAC",
+        "press_enter": ">> Press [ENTER] to Launch Switch-Scot...",
+        "engine_active": "⚡ SWITCH-SCOT MULTI-INTERFACE ENGINE ACTIVE ⚡",
+        "platform": "* Platform   : ",
+        "interfaces": "* Interfaces : ",
+        "hostname": "* Hostname   : ",
+        "mode_info": "* Mode/Target: ",
+        "press_ctrl_c": "\n[*] Press Ctrl+C at any time to safely stop.\n",
+        "running_status": "\r>> [RUNNING] Target: {target}:{port} | Active Cards: [{ifaces}] | Mode: {mode} | Elapsed: {elapsed} ",
         "stopped": "\n\n[+] Switch-Scot execution stopped on all interfaces.",
         "root_error_termux": "\n[!] Error: Root privileges required. Run with 'tsu'",
         "root_error_linux": "\n[!] Error: Root privileges required. Run with 'sudo switch-scot'",
@@ -122,9 +123,9 @@ MESSAGES = {
         "debian_install_hint": "[*] Install on Debian/Kali: sudo apt install -y hping3 macchanger iproute2",
         "arch_install_hint": "[*] Install on Arch: sudo pacman -S --noconfirm hping macchanger iproute2",
         "applying_stealth": "\n[*] Applying persistent obfuscation layer...",
-        "verifying_carrier": "[*] Verifying carrier link and route readiness on '{iface}'...",
-        "carrier_ready": "[+] Interface '{iface}' connected. Route to {target} verified.",
-        "carrier_timeout": "[!] Notice: Link timeout reached. Proceeding on '{iface}'."
+        "verifying_carrier": "[*] Verifying carrier link and route readiness on {iface}...",
+        "carrier_ready": "[+] Interface {iface} connected. Route to {target} verified.",
+        "carrier_timeout": "[!] Notice: Link timeout reached. Proceeding on {iface}."
     }
 }
 
@@ -326,7 +327,7 @@ class SwitchScot:
         # 3. Randomize MAC Address for all selected interfaces
         for iface in self.interfaces:
             if not self.skip_mac:
-                print(f"[*] Cycling MAC address on '{iface}'...")
+                print(f"[*] Cycling MAC address on {iface}...")
                 subprocess.run(["ip", "link", "set", iface, "down"], capture_output=True)
                 subprocess.run(["macchanger", "-r", iface], capture_output=True)
                 subprocess.run(["ip", "link", "set", iface, "up"], capture_output=True)
@@ -334,7 +335,6 @@ class SwitchScot:
                 self.wait_for_carrier_and_route(iface)
             else:
                 self.current_macs[iface] = self.get_mac_address(iface)
-                print(f"[*] Preserving existing MAC address on '{iface}' ({self.current_macs[iface]}).")
 
         # 4. Flush ARP neighbor cache
         subprocess.run(["ip", "neigh", "flush", "all"], capture_output=True)
@@ -409,18 +409,16 @@ class SwitchScot:
 def run_interactive_menu():
     print(BANNER)
     
-    # 0. Language Selection
     print("=" * 65)
-    print(" [1] 🇾🇪 العربية (Arabic)")
-    print(" [2] 🏴‍☠️ English")
+    print(" 1. 🇾🇪 اللغة العربية (Arabic)")
+    print(" 2. 🏴‍☠️ English")
     print("=" * 65)
-    lang_sel = input("[؟/Query] Select Language / اختر اللغة [1-2, default 1]: ").strip()
+    lang_sel = input(">> Select Language / اختر اللغة [Default 1]: ").strip()
     lang = "en" if lang_sel == "2" else "ar"
     msg = MESSAGES[lang]
 
-    print("\n" + "=" * 65)
-    print(f" {msg['menu_title']}")
-    print("=" * 65)
+    print("\n" + msg["menu_title"])
+    print("-" * 65)
 
     # 1. Multi-Interface Selection
     ifaces = SwitchScot.get_available_interfaces()
@@ -429,7 +427,7 @@ def run_interactive_menu():
     print(f"\n{msg['detected_ifaces']}")
     for idx, iface in enumerate(ifaces, start=1):
         tag = " (الافتراضي)" if idx == 1 and lang == "ar" else (" (Default)" if idx == 1 else "")
-        print(f"  [{idx}] {iface}{tag}")
+        print(f"  {idx}. {iface}{tag}")
     print(f"  {msg['all_ifaces']}")
     
     sel_iface = input(f"\n{msg['select_iface']}").strip().lower()
@@ -452,7 +450,7 @@ def run_interactive_menu():
     if not chosen_ifaces:
         chosen_ifaces = [default_iface]
         
-    print(f" {msg['selected_iface']}{', '.join(chosen_ifaces)}")
+    print(f"{msg['selected_iface']}{', '.join(chosen_ifaces)}")
 
     # 2. Target IP or URL Selection
     detected_gw = SwitchScot.detect_gateway()
@@ -460,9 +458,9 @@ def run_interactive_menu():
     raw_target = target_input if target_input else detected_gw
     
     extracted_host, extracted_port = SwitchScot.parse_target(raw_target, default_port=80)
-    print(f" {msg['target_ip']}{extracted_host}")
+    print(f"{msg['target_ip']}{extracted_host}")
     if raw_target.startswith(('http://', 'https://')) or ":" in raw_target:
-        print(f" {msg['extracted_port']}{extracted_port}")
+        print(f"{msg['extracted_port']}{extracted_port}")
 
     # 3. Port Selection
     port_input = input(f"\n{msg['enter_port'].format(default=extracted_port)}").strip()
@@ -470,7 +468,7 @@ def run_interactive_menu():
         chosen_port = int(port_input) if port_input else extracted_port
     except ValueError:
         chosen_port = extracted_port
-    print(f" {msg['final_port']}{chosen_port}")
+    print(f"{msg['final_port']}{chosen_port}")
 
     # 4. Mode Selection
     modes = [
@@ -481,33 +479,33 @@ def run_interactive_menu():
     ]
     print(f"\n{msg['modes_title']}")
     for idx, (m_id, m_desc) in enumerate(modes, start=1):
-        print(f"  [{idx}] {m_desc}")
+        print(f"  {m_desc}")
     
     sel_mode = input(f"\n{msg['select_mode']}").strip()
     try:
         chosen_mode = modes[int(sel_mode) - 1][0] if sel_mode else "tcp-syn"
     except (ValueError, IndexError):
         chosen_mode = "tcp-syn"
-    print(f" {msg['selected_mode']}{chosen_mode.upper()}")
+    print(f"{msg['selected_mode']}{chosen_mode.upper()}")
 
     # 5. Hostname Policy
     host_input = input(f"\n{msg['hostname_prompt']}").strip()
     custom_host = host_input if host_input else None
     if custom_host:
-        print(f" {msg['custom_host_set']}{custom_host}")
+        print(f"{msg['custom_host_set']}{custom_host}")
     else:
-        print(f" {msg['random_host_set']}")
+        print(f"{msg['random_host_set']}")
 
     # 6. MAC Address Policy
     print(f"\n{msg['mac_title']}")
-    print(f"  [1] {msg['mac_1']}")
-    print(f"  [2] {msg['mac_2']}")
+    print(f"  {msg['mac_1']}")
+    print(f"  {msg['mac_2']}")
     mac_choice = input(f"\n{msg['select_mac']}").strip()
     skip_mac = False if mac_choice == "2" else True
-    print(f" {msg['mac_safe'] if skip_mac else msg['mac_random']}")
+    print(f"{msg['mac_safe'] if skip_mac else msg['mac_random']}")
 
     # Launch Engine
-    print("\n" + "-" * 65)
+    print("\n" + "=" * 65)
     input(msg["press_enter"])
     
     engine = SwitchScot(
