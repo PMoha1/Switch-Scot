@@ -10,6 +10,7 @@
 **Switch-Scot** is a lightweight, zero-dependency network stress testing framework engineered to assess network infrastructure resilience, firewall capacity, and gateway load tolerance under controlled laboratory environments.
 
 ### 🌟 Key Features
+- **Smart URL & Domain Auto-Extractor:** Pass raw IPs or full web login URLs (e.g. `http://router.lan:8080/login.html`); the engine automatically resolves the IP and port and channels raw Layer 4 traffic to the destination.
 - **Simultaneous Multi-Interface Engine:** Bind and launch parallel high-throughput traffic across multiple Wi-Fi/Ethernet cards simultaneously (`1,2` or `all`).
 - **Interactive Easy-Menu (like Wifite):** Simple numbered prompts with smart auto-detection.
 - **Zero External Python Dependencies:** 100% built on Python standard libraries.
@@ -53,7 +54,7 @@ sudo switch-scot
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Multi-Interface Network Resilience Engine v3.0
+ Universal Multi-Interface Network Resilience Engine v3.1
 
 =================================================================
  🛠️  INTERACTIVE EASY SETUP MENU
@@ -68,11 +69,12 @@ sudo switch-scot
 [?] Select Interface(s) [e.g. 1, 1,2, or A for all - default 1]: 1,2
  -> Selected: wlp4s0, wlp9s0f4u2
 
-[?] Enter Target IP [Default: 192.168.8.1]: 
- -> Target IP: 192.168.8.1
+[?] Enter Target IP or Web Login URL [Default: 192.168.8.1]: http://192.168.8.1:8080/html/index.html
+ -> Target Host/IP : 192.168.8.1
+ -> Extracted Port  : 8080 (Auto-resolved from URL)
 
-[?] Enter Target Port [Default: 80]: 80
- -> Target Port: 80
+[?] Enter Target Port [Default: 8080]: 
+ -> Final Port: 8080
 
 [+] Evaluation Modes:
   [1] TCP-SYN  - Connection Table Saturation (Default)
@@ -96,13 +98,13 @@ sudo switch-scot
 
 ### 2. Fast CLI Mode:
 ```bash
-# Dual-Card execution simultaneously in one command
+# Pass URL directly in CLI (auto-extracts IP and Port)
+sudo switch-scot -t "http://192.168.8.1:8080/login.html" --no-mac
+
+# Multi-interface parallel execution
 sudo switch-scot -i wlp4s0 wlp9s0f4u2 -t 192.168.8.1 -p 80 --no-mac
 
-# Use ALL available interfaces at once
-sudo switch-scot -i all -t 192.168.8.1 -p 80 --no-mac
-
-# Real-time PPS Monitor
+# Live PPS & Throughput Monitor
 switch-scot-monitor
 ```
 

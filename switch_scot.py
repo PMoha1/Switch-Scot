@@ -15,6 +15,8 @@ import signal
 import subprocess
 import argparse
 import time
+import socket
+from urllib.parse import urlparse
 from datetime import datetime
 
 BANNER = r"""
@@ -23,13 +25,14 @@ BANNER = r"""
  \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
  |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
                                          |_|   
- Universal Multi-Interface Network Resilience Engine v3.0
+ Universal Multi-Interface Network Resilience Engine v3.1
 """
 
 class SwitchScot:
     def __init__(self, target="10.0.0.1", port=80, interfaces=None, mode="tcp-syn", skip_mac=False):
-        self.target = target
-        self.port = port
+        parsed_target, parsed_port = self.parse_target(target, port)
+        self.target = parsed_target
+        self.port = parsed_port
         self.mode = mode
         self.skip_mac = skip_mac
         self.is_termux = self.check_termux()
@@ -49,6 +52,44 @@ class SwitchScot:
         self.start_time = None
         self.current_macs = {}
         self.current_hostname = "N/A"
+
+    @staticmethod
+    def parse_target(raw_input, default_port=80):
+        if not raw_input:
+            return "10.0.0.1", default_port or 80
+
+        raw_input = str(raw_input).strip()
+        target_port = default_port or 80
+
+        # Check if URL scheme is present or if it has a port
+        if not raw_input.startswith(('http://', 'https://')):
+            match = re.match(r'^([^/:]+):(\d+)(/.*)?$', raw_input)
+            if match:
+                host = match.group(1)
+                target_port = int(match.group(2))
+                return host, target_port
+            test_url = 'http://' + raw_input
+        else:
+            test_url = raw_input
+
+        try:
+            parsed = urlparse(test_url)
+            host = parsed.hostname or raw_input
+            if parsed.port:
+                target_port = parsed.port
+            elif parsed.scheme == 'https':
+                target_port = 443
+            elif parsed.scheme == 'http':
+                target_port = 80
+            
+            # Try resolving hostname to IP if it's a domain
+            try:
+                ip = socket.gethostbyname(host)
+                return ip, target_port
+            except Exception:
+                return host, target_port
+        except Exception:
+            return raw_input, target_port
 
     @staticmethod
     def check_termux():
@@ -237,7 +278,7 @@ class SwitchScot:
             ifaces_str = ", ".join(self.interfaces)
             while True:
                 elapsed = str(datetime.now() - self.start_time).split(".")[0]
-                sys.stdout.write(f"\r >> [RUNNING] Target: {self.target} | Active Cards: [{ifaces_str}] | Mode: {self.mode.upper()} | Elapsed: {elapsed} ")
+                sys.stdout.write(f"\r >> [RUNNING] Target: {self.target}:{self.port} | Active Cards: [{ifaces_str}] | Mode: {self.mode.upper()} | Elapsed: {elapsed} ")
                 sys.stdout.flush()
                 time.sleep(1)
 
@@ -275,7 +316,6 @@ def run_interactive_menu():
     if sel_iface in ["a", "all"]:
         chosen_ifaces = ifaces
     elif sel_iface:
-        # Split by comma or space
         parts = re.split(r'[, ]+', sel_iface)
         for p in parts:
             try:
@@ -285,7 +325,6 @@ def run_interactive_menu():
             except ValueError:
                 if p in ifaces:
                     chosen_ifaces.append(p)
-        # Deduplicate preserving order
         chosen_ifaces = list(dict.fromkeys(chosen_ifaces))
     
     if not chosen_ifaces:
@@ -293,19 +332,23 @@ def run_interactive_menu():
         
     print(f" -> Selected: {', '.join(chosen_ifaces)}")
 
-    # 2. Target IP Selection
+    # 2. Target IP or URL Selection (Smart Extractor)
     detected_gw = SwitchScot.detect_gateway()
-    target_input = input(f"\n[?] Enter Target IP [Default: {detected_gw}]: ").strip()
-    chosen_target = target_input if target_input else detected_gw
-    print(f" -> Target IP: {chosen_target}")
+    target_input = input(f"\n[?] Enter Target IP or Web Login URL [Default: {detected_gw}]: ").strip()
+    raw_target = target_input if target_input else detected_gw
+    
+    extracted_host, extracted_port = SwitchScot.parse_target(raw_target, default_port=80)
+    print(f" -> Target Host/IP : {extracted_host}")
+    if raw_target.startswith(('http://', 'https://')) or ":" in raw_target:
+        print(f" -> Extracted Port  : {extracted_port} (Auto-resolved from URL)")
 
-    # 3. Port Selection
-    port_input = input("\n[?] Enter Target Port [Default: 80]: ").strip()
+    # 3. Port Selection (pre-populated with extracted port)
+    port_input = input(f"\n[?] Enter Target Port [Default: {extracted_port}]: ").strip()
     try:
-        chosen_port = int(port_input) if port_input else 80
+        chosen_port = int(port_input) if port_input else extracted_port
     except ValueError:
-        chosen_port = 80
-    print(f" -> Target Port: {chosen_port}")
+        chosen_port = extracted_port
+    print(f" -> Final Port: {chosen_port}")
 
     # 4. Mode Selection
     modes = [
@@ -338,7 +381,7 @@ def run_interactive_menu():
     input("⚡ Press [ENTER] to launch Switch-Scot on all selected interfaces...")
     
     engine = SwitchScot(
-        target=chosen_target,
+        target=extracted_host,
         port=chosen_port,
         interfaces=chosen_ifaces,
         mode=chosen_mode,
@@ -358,13 +401,13 @@ def main():
     parser.add_argument(
         "-t", "--target",
         default="10.0.0.1",
-        help="Target IP address (Default: 10.0.0.1)"
+        help="Target IP address or Web URL (e.g. 192.168.8.1 or http://router.lan:8080/login.html)"
     )
     parser.add_argument(
         "-p", "--port",
         type=int,
-        default=80,
-        help="Target Port (Default: 80)"
+        default=None,
+        help="Target Port (Default: Auto-extracted from URL or 80)"
     )
     parser.add_argument(
         "-i", "--interfaces",
@@ -390,7 +433,6 @@ def main():
 
     args = parser.parse_args()
     
-    # Handle 'all' in CLI
     cli_ifaces = args.interfaces
     if cli_ifaces and len(cli_ifaces) == 1 and cli_ifaces[0].lower() in ["all", "a"]:
         cli_ifaces = SwitchScot.get_available_interfaces()
