@@ -10,11 +10,12 @@
 **Switch-Scot** is a lightweight, zero-dependency network stress testing framework engineered to assess network infrastructure resilience, firewall capacity, and gateway load tolerance under controlled laboratory environments.
 
 ### 🌟 Key Features
+- **Interactive Easy-Menu (like Wifite):** Simple numbered prompts with smart auto-detection.
 - **Zero External Python Dependencies:** 100% built on Python standard libraries.
 - **Dynamic Platform Adaptation:** Automatically detects Termux (`tsu`) vs standard Linux (`sudo`).
 - **Carrier & Route Synchronization:** Intelligently verifies link carrier state and route table readiness before launching traffic.
 - **Persistent Obfuscation Layer:**
-  - Automated MAC address rotation via `macchanger` (with `--no-mac` flag for seamless Wi-Fi testing).
+  - Automated MAC address rotation via `macchanger`.
   - OS Fingerprint obfuscation via dynamic TTL randomization (64–128).
   - Device hostname spoofing.
   - ARP cache flushing.
@@ -23,79 +24,80 @@
   - `udp`: UDP Stateless Buffer Stress
   - `icmp`: ICMP Echo Control Plane Latency
   - `tcp-ack`: TCP ACK Stateful Filter Inspection
-- **Automated Interface Discovery:** Auto-detects active network route and adapter.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Automated Installation
-Run the automated installer script:
+### Automated Installation
 ```bash
-chmod +x install.sh
+git clone https://github.com/PMoha1/Switch-Scot.git
+cd Switch-Scot
 ./install.sh
-```
-
-### 2. Manual Installation
-
-#### Arch Linux:
-```bash
-sudo pacman -S hping macchanger iproute2 python
-```
-
-#### Debian / Kali / Ubuntu:
-```bash
-sudo apt update && sudo apt install -y hping3 macchanger iproute2 python3
-```
-
-#### Android (Termux with Root):
-```bash
-pkg install -y root-repo
-pkg install -y tsu hping3 macchanger iproute2 python
 ```
 
 ---
 
 ## 💻 Usage
 
-### Basic Execution (Default Target: `10.0.0.1`, Mode: `tcp-syn`, Port: `80`):
+### 1. Interactive Mode (Recommended - Easy Numbered Menu):
+Simply run the command with `sudo` and follow the on-screen numbers:
 ```bash
-# On Linux
-sudo python3 switch_scot.py
-
-# On Termux
-tsu
-python3 switch_scot.py
+sudo switch-scot
 ```
 
-### Advanced Usage Examples:
-
-```bash
-# Laptop Wi-Fi testing (preserves active Wi-Fi association while keeping TTL & Hostname spoofing)
-sudo python3 switch_scot.py -t 192.168.8.1 -p 80 --no-mac
-
-# Custom IP and port
-sudo python3 switch_scot.py -t 192.168.1.1 -p 443
-
-# UDP Stateless Stress Test
-sudo python3 switch_scot.py -t 10.0.0.1 -p 53 -m udp
-
-# ICMP Echo Latency Assessment
-sudo python3 switch_scot.py -t 10.0.0.1 -m icmp
-
-# Bind to a specific network interface
-sudo python3 switch_scot.py -i wlan0 -t 10.0.0.1
-```
-
-### CLI Options:
 ```text
-options:
-  -h, --help            Show help message and exit
-  -t, --target TARGET   Target IP address (Default: 10.0.0.1)
-  -p, --port PORT       Target Port (Default: 80)
-  -i, --interface IFACE Network interface to bind (Default: Auto-detected)
-  -m, --mode MODE       Evaluation Mode: [tcp-syn, udp, icmp, tcp-ack] (Default: tcp-syn)
-  --no-mac              Skip MAC address randomization (Recommended for active Wi-Fi on laptops)
+  ___         _ _       _          ___ cot ⚡
+ / __|_ __ __(_) |_ ___| |_ _____ / __| __ ___ 
+ \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
+ |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
+                                         |_|   
+ Universal Network Resilience Engine v2.5
+
+=================================================================
+ 🛠️  INTERACTIVE EASY SETUP MENU
+=================================================================
+
+[+] Detected Network Interfaces:
+  [1] wlp4s0 (Recommended / Default)
+  [2] wlp9s0f4u2
+  [3] enp3s0
+
+[?] Select Interface [1-3, default 1]: 1
+-> Selected: wlp4s0
+
+[?] Enter Target IP [Default: 192.168.8.1]: 
+-> Target IP: 192.168.8.1
+
+[?] Enter Target Port [Default: 80]: 80
+-> Target Port: 80
+
+[+] Evaluation Modes:
+  [1] TCP-SYN  - Connection Table Saturation (Default)
+  [2] UDP      - Stateless Buffer Stress
+  [3] ICMP     - Control Plane Latency
+  [4] TCP-ACK  - Stateful Firewall Inspection
+
+[?] Select Mode [1-4, default 1]: 1
+-> Selected Mode: TCP-SYN
+
+[+] MAC Address Randomization Policy:
+  [1] Keep Current MAC (Recommended for stable active Wi-Fi)
+  [2] Randomize MAC Address (Full Hardware Spoofing)
+
+[?] Select MAC Policy [1-2, default 1]: 1
+
+-----------------------------------------------------------------
+⚡ Press [ENTER] to launch Switch-Scot...
+```
+
+### 2. Fast CLI Mode (For Automation & Advanced Users):
+```bash
+# Direct execution with flags
+sudo switch-scot -t 192.168.8.1 -p 80 --no-mac
+
+# Live PPS and Bandwidth Monitor
+switch-scot-monitor
 ```
 
 ---

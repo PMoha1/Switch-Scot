@@ -17,6 +17,15 @@ import argparse
 import time
 from datetime import datetime
 
+BANNER = r"""
+  ___         _ _       _          ___ cot ⚡
+ / __|_ __ __(_) |_ ___| |_ _____ / __| __ ___ 
+ \__ \ V  V /| |  _/ __| ' \_____\__ \ _| '_ \
+ |___/\_/\_/ |_|\__\___|_||_|    |___/__| .__/
+                                         |_|   
+ Universal Network Resilience Engine v2.5
+"""
+
 class SwitchScot:
     def __init__(self, target="10.0.0.1", port=80, interface=None, mode="tcp-syn", skip_mac=False):
         self.target = target
@@ -39,7 +48,7 @@ class SwitchScot:
             if self.is_termux:
                 print("\n[!] Error: Root privileges required. Run with 'tsu'")
             else:
-                print("\n[!] Error: Root privileges required. Run with 'sudo python3 switch_scot.py'")
+                print("\n[!] Error: Root privileges required. Run with 'sudo switch-scot'")
             sys.exit(1)
 
     def check_dependencies(self):
@@ -61,6 +70,24 @@ class SwitchScot:
                 print("[*] Install on Arch: sudo pacman -S --noconfirm hping macchanger iproute2")
             sys.exit(1)
 
+    @staticmethod
+    def get_available_interfaces():
+        try:
+            return [f for f in os.listdir('/sys/class/net') if f != 'lo']
+        except Exception:
+            return ["wlan0"]
+
+    @staticmethod
+    def detect_gateway():
+        try:
+            out = subprocess.check_output(["ip", "route", "show", "default"], stderr=subprocess.DEVNULL).decode()
+            match = re.search(r"default via (\d{1,3}(\.\d{1,3}){3})", out)
+            if match:
+                return match.group(1)
+        except Exception:
+            pass
+        return "10.0.0.1"
+
     def detect_interface(self):
         try:
             out = subprocess.check_output(["ip", "route", "show", "default"], stderr=subprocess.DEVNULL).decode()
@@ -70,15 +97,8 @@ class SwitchScot:
         except Exception:
             pass
 
-        # Fallback: scan available non-loopback interfaces
-        try:
-            ifaces = [f for f in os.listdir('/sys/class/net') if f != 'lo']
-            if ifaces:
-                return ifaces[0]
-        except Exception:
-            pass
-
-        return "wlan0"
+        ifaces = self.get_available_interfaces()
+        return ifaces[0] if ifaces else "wlan0"
 
     def get_mac_address(self):
         try:
@@ -89,7 +109,6 @@ class SwitchScot:
             return "Unknown"
 
     def wait_for_carrier_and_route(self, timeout=15):
-        """Waits for wireless/wired link carrier and routing to re-establish."""
         print(f"[*] Verifying carrier link and route readiness on '{self.interface}'...")
         start_time = time.time()
         
@@ -116,7 +135,6 @@ class SwitchScot:
                 carrier_ok = True
 
             if carrier_ok:
-                # Test route to target
                 try:
                     res = subprocess.run(["ip", "route", "get", self.target], capture_output=True)
                     if res.returncode == 0:
@@ -154,7 +172,6 @@ class SwitchScot:
             subprocess.run(["macchanger", "-r", self.interface], capture_output=True)
             subprocess.run(["ip", "link", "set", self.interface, "up"], capture_output=True)
             self.current_mac = self.get_mac_address()
-            # Wait for Wi-Fi re-association
             self.wait_for_carrier_and_route()
         else:
             self.current_mac = self.get_mac_address()
@@ -185,7 +202,7 @@ class SwitchScot:
         self.randomize_identity()
 
         cmd = self.build_command()
-        print("=" * 65)
+        print("\n" + "=" * 65)
         print(f" ⚡ SWITCH-SCOT ENGINE ACTIVE")
         print(f" • Platform  : {'Android (Termux)' if self.is_termux else 'Linux OS'}")
         print(f" • Interface : {self.interface} | MAC: {self.current_mac}")
@@ -221,7 +238,87 @@ class SwitchScot:
         print("\n\n[+] Switch-Scot execution stopped.")
         sys.exit(0)
 
+def run_interactive_menu():
+    print(BANNER)
+    print("=" * 65)
+    print(" 🛠️  INTERACTIVE EASY SETUP MENU")
+    print("=" * 65)
+
+    # 1. Interface Selection
+    ifaces = SwitchScot.get_available_interfaces()
+    default_iface = ifaces[0] if ifaces else "wlan0"
+    
+    print("\n[+] Detected Network Interfaces:")
+    for idx, iface in enumerate(ifaces, start=1):
+        tag = " (Recommended / Default)" if idx == 1 else ""
+        print(f"  [{idx}] {iface}{tag}")
+    
+    sel_iface = input(f"\n[?] Select Interface [1-{len(ifaces)}, default 1]: ").strip()
+    try:
+        chosen_iface = ifaces[int(sel_iface) - 1] if sel_iface else default_iface
+    except (ValueError, IndexError):
+        chosen_iface = default_iface
+    print(f" -> Selected: {chosen_iface}")
+
+    # 2. Target IP Selection
+    detected_gw = SwitchScot.detect_gateway()
+    target_input = input(f"\n[?] Enter Target IP [Default: {detected_gw}]: ").strip()
+    chosen_target = target_input if target_input else detected_gw
+    print(f" -> Target IP: {chosen_target}")
+
+    # 3. Port Selection
+    port_input = input("\n[?] Enter Target Port [Default: 80]: ").strip()
+    try:
+        chosen_port = int(port_input) if port_input else 80
+    except ValueError:
+        chosen_port = 80
+    print(f" -> Target Port: {chosen_port}")
+
+    # 4. Mode Selection
+    modes = [
+        ("tcp-syn", "TCP-SYN  - Connection Table Saturation (Default)"),
+        ("udp",     "UDP      - Stateless Buffer Stress"),
+        ("icmp",    "ICMP     - Control Plane Latency"),
+        ("tcp-ack", "TCP-ACK  - Stateful Firewall Inspection")
+    ]
+    print("\n[+] Evaluation Modes:")
+    for idx, (m_id, m_desc) in enumerate(modes, start=1):
+        print(f"  [{idx}] {m_desc}")
+    
+    sel_mode = input(f"\n[?] Select Mode [1-4, default 1]: ").strip()
+    try:
+        chosen_mode = modes[int(sel_mode) - 1][0] if sel_mode else "tcp-syn"
+    except (ValueError, IndexError):
+        chosen_mode = "tcp-syn"
+    print(f" -> Selected Mode: {chosen_mode.upper()}")
+
+    # 5. MAC Address Policy
+    print("\n[+] MAC Address Randomization Policy:")
+    print("  [1] Keep Current MAC (Recommended for stable active Wi-Fi)")
+    print("  [2] Randomize MAC Address (Full Hardware Spoofing)")
+    mac_choice = input("\n[?] Select MAC Policy [1-2, default 1]: ").strip()
+    skip_mac = False if mac_choice == "2" else True
+    print(f" -> MAC Policy: {'Randomize MAC' if not skip_mac else 'Keep Active MAC (Safe Wi-Fi)'}")
+
+    # Launch Engine
+    print("\n" + "-" * 65)
+    input("⚡ Press [ENTER] to launch Switch-Scot...")
+    
+    engine = SwitchScot(
+        target=chosen_target,
+        port=chosen_port,
+        interface=chosen_iface,
+        mode=chosen_mode,
+        skip_mac=skip_mac
+    )
+    engine.start()
+
 def main():
+    # If executed without CLI arguments, launch interactive menu!
+    if len(sys.argv) == 1:
+        run_interactive_menu()
+        return
+
     parser = argparse.ArgumentParser(
         description="Switch-Scot ⚡ Universal Cross-Platform Network Resilience & Load Testing Engine",
         formatter_class=argparse.RawTextHelpFormatter
