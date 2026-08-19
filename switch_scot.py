@@ -27,45 +27,45 @@ BANNER = r"""
   \___ \ \ /\ / / | __/ __| '_ \_____\___ \ / __|/ _ \| __|
   ____) \ V  V /| | || (__| | | |    ____) | (__| (_) | |_ 
  |_____/ \_/\_/ |_|\__\___|_| |_|   |_____/ \___|\___/ \__|
-                                                           ⚡ v3.8
- 🇾🇪 المطور : محمد يقين مجمل الفايق | صنعاء - اليمن
- 🇾🇪 Author : Mohammed Yaqeen | Sana'a - Yemen
+                                                           ⚡ v4.0
+ المطور: محمد يقين مجمل الفايق - صنعاء، اليمن
+ Author: Mohammed Yaqeen - Sana'a, Yemen
 """
 
 MESSAGES = {
     "ar": {
         "menu_title": "=== لوحة التحكم والتشغيل التفاعلي السريع ===",
-        "detected_ifaces": "* كروت الشبكة المكتشفة في جهازك:",
-        "all_ifaces": "A. تشغيل كل الكروت معاً في نفس الوقت (وضع التيربو الخارق 🚀)",
-        "select_iface": ">> رقم الكرت المطلوب [الافتراضي 1]: ",
-        "selected_iface": "* الكروت المختارة: ",
-        "enter_target": ">> عنوان الهدف أو الرابط [الافتراضي {default}]: ",
-        "target_ip": "* عنوان الهدف: ",
-        "extracted_port": "* المنفذ المستخرج تلقائياً: ",
-        "enter_port": ">> رقم المنفذ المطلوب [الافتراضي {default}]: ",
-        "final_port": "* المنفذ النهائي: ",
-        "modes_title": "* أوضاع الفحص والتقييم المتاحة:",
-        "mode_1": "1. TCP-SYN (استنزاف طابور اتصالات الراوتر - الأقوى)",
-        "mode_2": "2. UDP (ضغط الذاكرة المؤقتة للراوتر)",
-        "mode_3": "3. ICMP (قياس سرعة استجابة وتأخير المعالج)",
-        "mode_4": "4. TCP-ACK (فحص واختبار جدار الحماية)",
-        "select_mode": ">> رقم وضع الفحص [الافتراضي 1]: ",
-        "selected_mode": "* الوضع المعتمد: ",
-        "hostname_prompt": ">> اسم الجهاز المنحول ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
-        "custom_host_set": "* اسم الجهاز المعتمد: ",
-        "random_host_set": "* اسم الجهاز: توليد ذكي عشوائي",
-        "mac_title": "* خيارات الماك أدرس (MAC Address):",
-        "mac_1": "1. الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)",
-        "mac_2": "2. تدوير الماك عشوائياً (تمويه فيزيائي شامل)",
-        "select_mac": ">> خيار الماك [الافتراضي 1]: ",
-        "mac_safe": "* سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال",
-        "mac_random": "* سياسة الماك: تدوير الماك عشوائياً",
-        "press_enter": ">> اضغط ENTER للبدء والانطلاق فوراً...",
+        "detected_ifaces": "كروت الشبكة المكتشفة في جهازك:",
+        "all_ifaces": "A - تشغيل كل الكروت معاً (وضع التيربو الخارق 🚀)",
+        "select_iface": "اختر رقم كرت الشبكة [الافتراضي 1]: ",
+        "selected_iface": "الكروت المختارة: ",
+        "enter_target": "أدخل عنوان الهدف أو الرابط [الافتراضي {default}]: ",
+        "target_ip": "عنوان الهدف: ",
+        "extracted_port": "المنفذ المستخرج تلقائياً: ",
+        "enter_port": "أدخل رقم المنفذ المطلوب [الافتراضي {default}]: ",
+        "final_port": "المنفذ المعتمد: ",
+        "modes_title": "أوضاع الفحص والتقييم المتاحة:",
+        "mode_1": "1 - نمط TCP-SYN (استنزاف طابور اتصالات الراوتر - الأقوى)",
+        "mode_2": "2 - نمط UDP (ضغط الذاكرة المؤقتة للراوتر)",
+        "mode_3": "3 - نمط ICMP (قياس سرعة استجابة وتأخير المعالج)",
+        "mode_4": "4 - نمط TCP-ACK (فحص واختبار جدار الحماية)",
+        "select_mode": "اختر رقم وضع الفحص [الافتراضي 1]: ",
+        "selected_mode": "الوضع المعتمد: ",
+        "hostname_prompt": "اسم الجهاز المنحول ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
+        "custom_host_set": "اسم الجهاز المعتمد: ",
+        "random_host_set": "اسم الجهاز: توليد ذكي عشوائي",
+        "mac_title": "خيارات الماك أدرس:",
+        "mac_1": "1 - الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)",
+        "mac_2": "2 - تدوير الماك عشوائياً (تمويه فيزيائي شامل)",
+        "select_mac": "اختر سياسة الماك [الافتراضي 1]: ",
+        "mac_safe": "سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال",
+        "mac_random": "سياسة الماك: تدوير الماك عشوائياً",
+        "press_enter": "اضغط ENTER للبدء والانطلاق فوراً...",
         "engine_active": "⚡ محرك SWITCH-SCOT يعمل الآن بأقصى طاقة ⚡",
-        "platform": "* بيئة التشغيل : ",
-        "interfaces": "* كروت الشبكة : ",
-        "hostname": "* اسم الجهاز  : ",
-        "mode_info": "* وضع الفحص  : ",
+        "platform": "بيئة التشغيل: ",
+        "interfaces": "كروت الشبكة: ",
+        "hostname": "اسم الجهاز : ",
+        "mode_info": "وضع الفحص : ",
         "press_ctrl_c": "\n[*] اضغط Ctrl+C في أي وقت لإيقاف العملية بأمان.\n",
         "running_status": "\r>> [جاري الضخ] الهدف: {target}:{port} | الكروت: [{ifaces}] | النمط: {mode} | الوقت: {elapsed} ",
         "stopped": "\n\n[+] تم إيقاف عملية الضخ بنجاح على جميع الكروت.",
@@ -82,37 +82,37 @@ MESSAGES = {
     },
     "en": {
         "menu_title": "=== Switch-Scot Interactive Setup Menu ===",
-        "detected_ifaces": "* Detected Network Interfaces:",
-        "all_ifaces": "A. Use ALL Interfaces Simultaneously (Turbo Mode 🚀)",
-        "select_iface": ">> Select Interface(s) [Default 1]: ",
-        "selected_iface": "* Selected Interfaces: ",
-        "enter_target": ">> Target IP or URL [Default {default}]: ",
-        "target_ip": "* Target Host/IP: ",
-        "extracted_port": "* Extracted Port: ",
-        "enter_port": ">> Target Port [Default {default}]: ",
-        "final_port": "* Final Port: ",
-        "modes_title": "* Available Evaluation Modes:",
-        "mode_1": "1. TCP-SYN (Connection Table Saturation - Strongest)",
-        "mode_2": "2. UDP (Stateless Buffer Stress)",
-        "mode_3": "3. ICMP (Control Plane Latency)",
-        "mode_4": "4. TCP-ACK (Stateful Firewall Inspection)",
-        "select_mode": ">> Select Mode [Default 1]: ",
-        "selected_mode": "* Selected Mode: ",
-        "hostname_prompt": ">> Custom Device Hostname [Press Enter for Random]: ",
-        "custom_host_set": "* Custom Hostname: ",
-        "random_host_set": "* Hostname: Random Smart Device",
-        "mac_title": "* MAC Address Policy:",
-        "mac_1": "1. Keep Current MAC (Recommended for stable Wi-Fi)",
-        "mac_2": "2. Randomize MAC Address (Full Spoof)",
-        "select_mac": ">> Select Policy [Default 1]: ",
-        "mac_safe": "* MAC Policy: Keep Current MAC",
-        "mac_random": "* MAC Policy: Randomize MAC",
-        "press_enter": ">> Press [ENTER] to Launch Switch-Scot...",
+        "detected_ifaces": "Detected Network Interfaces:",
+        "all_ifaces": "A - Use ALL Interfaces Simultaneously (Turbo Mode 🚀)",
+        "select_iface": "Select Interface [Default 1]: ",
+        "selected_iface": "Selected Interfaces: ",
+        "enter_target": "Target IP or URL [Default {default}]: ",
+        "target_ip": "Target Host/IP: ",
+        "extracted_port": "Extracted Port: ",
+        "enter_port": "Target Port [Default {default}]: ",
+        "final_port": "Final Port: ",
+        "modes_title": "Available Evaluation Modes:",
+        "mode_1": "1 - TCP-SYN (Connection Table Saturation - Strongest)",
+        "mode_2": "2 - UDP (Stateless Buffer Stress)",
+        "mode_3": "3 - ICMP (Control Plane Latency)",
+        "mode_4": "4 - TCP-ACK (Stateful Firewall Inspection)",
+        "select_mode": "Select Mode [Default 1]: ",
+        "selected_mode": "Selected Mode: ",
+        "hostname_prompt": "Custom Device Hostname [Press Enter for Random]: ",
+        "custom_host_set": "Custom Hostname: ",
+        "random_host_set": "Hostname: Random Smart Device",
+        "mac_title": "MAC Address Policy:",
+        "mac_1": "1 - Keep Current MAC (Recommended for stable Wi-Fi)",
+        "mac_2": "2 - Randomize MAC Address (Full Spoof)",
+        "select_mac": "Select Policy [Default 1]: ",
+        "mac_safe": "MAC Policy: Keep Current MAC",
+        "mac_random": "MAC Policy: Randomize MAC",
+        "press_enter": "Press [ENTER] to Launch Switch-Scot...",
         "engine_active": "⚡ SWITCH-SCOT MULTI-INTERFACE ENGINE ACTIVE ⚡",
-        "platform": "* Platform   : ",
-        "interfaces": "* Interfaces : ",
-        "hostname": "* Hostname   : ",
-        "mode_info": "* Mode/Target: ",
+        "platform": "Platform   : ",
+        "interfaces": "Interfaces : ",
+        "hostname": "Hostname   : ",
+        "mode_info": "Mode/Target: ",
         "press_ctrl_c": "\n[*] Press Ctrl+C at any time to safely stop.\n",
         "running_status": "\r>> [RUNNING] Target: {target}:{port} | Active Cards: [{ifaces}] | Mode: {mode} | Elapsed: {elapsed} ",
         "stopped": "\n\n[+] Switch-Scot execution stopped on all interfaces.",
@@ -410,10 +410,10 @@ def run_interactive_menu():
     print(BANNER)
     
     print("=" * 65)
-    print(" 1. 🇾🇪 اللغة العربية (Arabic)")
-    print(" 2. 🏴‍☠️ English")
+    print(" 1 - اللغة العربية")
+    print(" 2 - English")
     print("=" * 65)
-    lang_sel = input(">> اختر رقم اللغة / Select Language [1-2, default 1]: ").strip()
+    lang_sel = input("اختر اللغة / Select Language [1-2, default 1]: ").strip()
     lang = "en" if lang_sel == "2" else "ar"
     msg = MESSAGES[lang]
 
@@ -427,7 +427,7 @@ def run_interactive_menu():
     print(f"\n{msg['detected_ifaces']}")
     for idx, iface in enumerate(ifaces, start=1):
         tag = " (الافتراضي)" if idx == 1 and lang == "ar" else (" (Default)" if idx == 1 else "")
-        print(f"  {idx}. {iface}{tag}")
+        print(f"  {idx} - {iface}{tag}")
     print(f"  {msg['all_ifaces']}")
     
     sel_iface = input(f"\n{msg['select_iface']}").strip().lower()
