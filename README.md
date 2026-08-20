@@ -10,6 +10,30 @@
 
 ---
 
+## 📖 Executive Summary / ملخص المشروع باختصار
+
+### 🇸🇦 **باللغة العربية (ما هو المشروع وكيف يعمل؟):**
+**Switch-Scot ⚡** هي أداة مفتوحة المصدر وعابرة للمنصات (Linux و Android Termux) متخصصة في **اختبار قدرة وتحمل أجهزة الشبكات والجدران النارية (Firewalls/MikroTik)** وتقييم استجابتها تحت أقصى ضغط ممكن.
+
+#### ⚙️ **كيف تعمل الأداة باختصار؟**
+1. **تغيير البصمة وتجاوز الحظر:** تقوم الأداة بتوليد هوية جديدة للجهاز ومسح بصماته (تدوير الـ MAC، تغيير بصمة النواة TTL و TCP، انتحال اسم جهاز ذكي، وتصفير جداول الـ ARP و DNS) لمنع شبكات الميكروتك وبوابات الـ Hotspot من تعقب أو حظر جهازك.
+2. **التعرف الذكي على الهدف:** تستخرج الأداة عنوان الـ IP والمنفذ تلقائياً حتى لو أدخلت رابط ويب كامل لصفحة تسجيل الدخول (مثل صفحات تسجيل دخول الراوتر أو شبكات الكروت).
+3. **الضخ المتوازي عبر عدة كروت:** تقوم بربط وإطلاق حزم فحص متوازية فائقة السرعة على مستوى الطبقة الرابعة (Layer 4 Raw Sockets) عبر كرت أو عدة كروت شبكة معاً في نفس اللحظة لمضاعفة قوة التدفق.
+4. **المراقبة اللحظية:** تتيح لك شاشة مراقبة حية مدمجة (`switch-scot-monitor`) لمعرفة عدد الحزم في الثانية (PPS) وسرعة التدفق الفعلية (Mbps).
+
+---
+
+### 🇬🇧 **In English (What is it & How does it work?):**
+**Switch-Scot ⚡** is a lightweight, zero-dependency, cross-platform network stress & resilience testing framework built for Linux and Android (Termux).
+
+#### ⚙️ **How it Works in Brief:**
+1. **Identity Spoofing & Anti-Tracking:** Automatically rotates MAC addresses, randomizes OS kernel fingerprints (TTL / TCP SYN options), spoofs DHCP hostnames, and flushes ARP/DNS caches to bypass captive portal / MikroTik device fingerprinting.
+2. **Smart Target Extraction:** Automatically parses raw IPs, domain names, or full web login URLs (e.g. `http://router.lan:8080/login.html`) and resolves the target IP and port.
+3. **Multi-Interface Parallel Engine:** Leverages raw Layer 4 sockets across multiple physical/wireless network interfaces simultaneously to maximize throughput without bottlenecking CPU resources.
+4. **Real-Time Telemetry:** Features a standalone live monitor (`switch-scot-monitor`) tracking live Packets Per Second (PPS) and bandwidth (Mbps).
+
+---
+
 ## 🌟 Key Features / المميزات الرئيسية
 
 - **🌐 Dual-Language Interface (عربي / English):** واجهة تفاعلية كاملة تدعم اللغة العربية والإنجليزية باحترافية.
